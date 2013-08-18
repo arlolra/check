@@ -86,17 +86,15 @@ func IsTor(remoteAddr string) bool {
 func UpToDate(r *http.Request) bool {
 	if r.URL.Query().Get("uptodate") == "0" {
 		return false
-	} else {
-		return true
 	}
+	return true
 }
 
 func Small(r *http.Request) bool {
 	if len(r.URL.Query().Get("small")) > 0 {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 // determine which language to use. default to english
