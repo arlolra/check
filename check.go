@@ -15,6 +15,7 @@ import (
 type Page struct {
 	IsTor    bool
 	UpToDate bool
+	NotSmall bool
 	OnOff    string
 	Lang     string
 	IP       string
@@ -83,19 +84,28 @@ func IsTor(remoteAddr string) bool {
 }
 
 func UpToDate(r *http.Request) bool {
-	uptodate := r.URL.Query().Get("uptodate")
-	if uptodate == "1" {
+	if r.URL.Query().Get("uptodate") == "0" {
+		return false
+	} else {
 		return true
 	}
-	if uptodate == "0" {
+}
+
+func Small(r *http.Request) bool {
+	if len(r.URL.Query().Get("small")) > 0 {
+		return true
+	} else {
 		return false
 	}
-	small := r.URL.Query().Get("small")
-	if small == "1" {
-		return false
+}
+
+// determine which language to use. default to english
+func Lang(r *http.Request) string {
+	lang := r.URL.Query().Get("lang")
+	if len(lang) == 0 {
+		lang = "en_US"
 	}
-	// no info. default to true
-	return true
+	return lang
 }
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
@@ -119,18 +129,13 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		onOff = "off"
 	}
 
-	// determin which language to use. default to english
-	lang := r.URL.Query().Get("lang")
-	if len(lang) == 0 {
-		lang = "en_US"
-	}
-
 	// instance of your page model
 	p := Page{
 		isTor,
 		isTor && !UpToDate(r),
+		!Small(r),
 		onOff,
-		lang,
+		Lang(r),
 		host,
 		locales,
 	}
