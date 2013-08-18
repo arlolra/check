@@ -99,8 +99,11 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get remote ip
+	host, _, _ := net.SplitHostPort(r.RemoteAddr)
+
 	// determine if we"re in Tor
-	isTor := IsTor(r.RemoteAddr)
+	isTor := IsTor(host)
 
 	// prepare Tor string
 	var inTor string
@@ -124,7 +127,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		isTor,
 		onOff,
 		lang,
-		r.RemoteAddr,
+		host,
 		domain.GetText(lang, inTor),
 		domain.GetText(lang, "Your IP address appears to be: "),
 		locales,
