@@ -19,6 +19,7 @@ type Page struct {
 	OnOff    string
 	Lang     string
 	IP       string
+	Extra    string
 	Locales  map[string]string
 }
 
@@ -135,14 +136,27 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		onOff = "off"
 	}
 
+	small := Small(r)
+	upToDate := UpToDate(r)
+
+	// querystring params
+	extra := ""
+	if small {
+		extra += "&small=1"
+	}
+	if !upToDate {
+		extra += "&uptodate=0"
+	}
+
 	// instance of your page model
 	p := Page{
 		isTor,
-		isTor && !UpToDate(r),
-		!Small(r),
+		isTor && !upToDate,
+		!small,
 		onOff,
 		Lang(r),
 		host,
+		extra,
 		locales,
 	}
 
@@ -169,6 +183,9 @@ func main() {
 	layout = layout.Funcs(template.FuncMap{
 		"UnEscaped": func(x string) interface{} {
 			return template.HTML(x)
+		},
+		"UnEscapedURL": func(x string) interface{} {
+			return template.URL(x)
 		},
 		"GetText": func(lang string, text string) string {
 			return domain.GetText(lang, text)

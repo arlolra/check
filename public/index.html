@@ -34,8 +34,9 @@
   </p>
   <p class="small">This page is also available in the following languages:</p>
   <ul class="small">
+    {{ $out := . }}
     {{ range $k, $i := .Locales }}
-      <li><a href="/?lang={{ $k }}">{{ $i | UnEscaped }}</a></li>
+      <li><a href="/?lang={{ $k }}{{ $out.Extra | UnEscapedURL }}">{{ $i | UnEscaped }}</a></li>
     {{ end }}
   </ul>
 </body>
