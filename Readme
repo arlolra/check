@@ -1,0 +1,7 @@
+== A new check.torproject.org, hopefully
+
+    apt-get install gettext
+    go get github.com/samuel/go-gettext/gettext
+    make i18n
+    make build
+    make start
