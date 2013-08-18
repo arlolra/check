@@ -1,0 +1,33 @@
+body {
+	text-align: center;
+	font-family: Helvetica, sans-serif;
+	margin: 2em 4em;
+}
+
+ul {
+	margin: 0;
+	padding: 0;
+}
+
+li {
+	text-align: left;
+	display: inline;
+	list-style-type: none;
+	margin: 0;
+}
+
+.on {
+	color: green;
+}
+
+.off {
+	color: red;
+}
+
+.mid {
+	margin: 3em 0;
+}
+
+.small {
+	font-size: 0.8em;
+}
