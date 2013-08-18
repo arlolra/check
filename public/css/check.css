@@ -4,6 +4,14 @@ body {
 	margin: 2em 4em;
 }
 
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
 ul {
 	margin: 0;
 	padding: 0;
@@ -30,4 +38,10 @@ li {
 
 .small {
 	font-size: 0.8em;
+}
+
+.security {
+	margin: 2em 0;
+	font-size: 2em;
+	color: orange;
 }

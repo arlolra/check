@@ -13,17 +13,13 @@ import (
 
 // page model
 type Page struct {
-	IsTor   bool
-	OnOff   string
-	Lang    string
-	IP      string
-	InTor   string
-	YourIP  string
-	Locales map[string]string
+	IsTor    bool
+	UpToDate bool
+	OnOff    string
+	Lang     string
+	IP       string
+	Locales  map[string]string
 }
-
-// language domain
-var domain *gettext.Domain
 
 // layout template
 var layout = template.New("")
@@ -61,11 +57,6 @@ var locales = map[string]string{
 	"zh_CN": "&#20013;&#25991;(&#31616;)",
 }
 
-// return raw html
-func unescaped(x string) interface{} {
-	return template.HTML(x)
-}
-
 // rejigger this to not make dns queries
 func IsTor(remoteAddr string) bool {
 	if net.ParseIP(remoteAddr).To4() == nil {
@@ -91,6 +82,22 @@ func IsTor(remoteAddr string) bool {
 	return inTor
 }
 
+func UpToDate(r *http.Request) bool {
+	uptodate := r.URL.Query().Get("uptodate")
+	if uptodate == "1" {
+		return true
+	}
+	if uptodate == "0" {
+		return false
+	}
+	small := r.URL.Query().Get("small")
+	if small == "1" {
+		return false
+	}
+	// no info. default to true
+	return true
+}
+
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 
 	// serve public files
@@ -105,15 +112,11 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	// determine if we"re in Tor
 	isTor := IsTor(host)
 
-	// prepare Tor string
-	var inTor string
 	var onOff string
 	if isTor {
 		onOff = "on"
-		inTor = "Congratulations. Your browser is configured to use Tor."
 	} else {
 		onOff = "off"
-		inTor = "Sorry. You are not using Tor."
 	}
 
 	// determin which language to use. default to english
@@ -125,11 +128,10 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	// instance of your page model
 	p := Page{
 		isTor,
+		isTor && !UpToDate(r),
 		onOff,
 		lang,
 		host,
-		domain.GetText(lang, inTor),
-		domain.GetText(lang, "Your IP address appears to be: "),
 		locales,
 	}
 
@@ -147,15 +149,19 @@ func main() {
 	}
 
 	// load i18n
-	var err error
-	domain, err = gettext.NewDomain("check", "locale")
+	domain, err := gettext.NewDomain("check", "locale")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// add template funcs
 	layout = layout.Funcs(template.FuncMap{
-		"unescaped": unescaped,
+		"UnEscaped": func(x string) interface{} {
+			return template.HTML(x)
+		},
+		"GetText": func(lang string, text string) string {
+			return domain.GetText(lang, text)
+		},
 	})
 
 	// load layout
