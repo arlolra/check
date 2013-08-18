@@ -122,6 +122,14 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	// determine if we"re in Tor
 	isTor := IsTor(host)
 
+	// short circuit for torbutton
+	if len(r.URL.Query().Get("TorButton")) > 0 {
+		layout.ExecuteTemplate(w, "torbutton.html", isTor)
+		return
+	}
+
+	// string used for classes and such
+	// in the in template
 	var onOff string
 	if isTor {
 		onOff = "on"
@@ -170,7 +178,10 @@ func main() {
 	})
 
 	// load layout
-	layout, err = layout.ParseFiles("public/index.html")
+	layout, err = layout.ParseFiles(
+		"public/index.html",
+		"public/torbutton.html",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
