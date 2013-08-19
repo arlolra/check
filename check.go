@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
 	"html/template"
@@ -8,7 +9,10 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
 )
 
 // page model
@@ -23,65 +27,112 @@ type Page struct {
 	Locales  map[string]string
 }
 
-// layout template
-var layout = template.New("")
+var (
 
-// public file server
-var phttp = http.NewServeMux()
+	// map the exit list
+	// TODO: investigate other data structures
+	ExitMap  map[string]bool
+	ExitLock = new(sync.RWMutex)
 
-// locales map
-var locales = map[string]string{
-	"ar":    "&#1593;&#1585;&#1576;&#1610;&#1577;&nbsp;(Arabiya)",
-	"bms":   "Burmese",
-	"cs":    "&#269;esky",
-	"da":    "Dansk",
-	"de":    "Deutsch",
-	"el":    "&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;&nbsp;(Ellinika)",
-	"en_US": "English",
-	"es":    "Espa&ntilde;ol",
-	"et":    "Estonian",
-	"fa_IR": "&#1601;&#1575;&#1585;&#1587;&#1740; (F&#257;rs&#299;)",
-	"fr":    "Fran&ccedil;ais",
-	"it_IT": "Italiano",
-	"ja":    "&#26085;&#26412;&#35486;&nbsp;(Nihongo)",
-	"nb":    "Norsk&nbsp;(Bokm&aring;l)",
-	"nl":    "Nederlands",
-	"pl":    "Polski",
-	"pt":    "Portugu&ecirc;s",
-	"pt_BR": "Portugu&ecirc;s do Brasil",
-	"ro":    "Rom&acirc;n&#259;",
-	"fi":    "Suomi",
-	"ru":    "&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;&nbsp;(Russkij)",
-	"th":    "Thai",
-	"tr":    "T&uuml;rk&ccedil;e",
-	"uk":    "&#1091;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;&nbsp;(Ukrajins\"ka)",
-	"vi":    "Vietnamese",
-	"zh_CN": "&#20013;&#25991;(&#31616;)",
+	// layout template
+	Layout = template.New("")
+
+	// public file server
+	Phttp = http.NewServeMux()
+
+	// locales map
+	Locales = map[string]string{
+		"ar":    "&#1593;&#1585;&#1576;&#1610;&#1577;&nbsp;(Arabiya)",
+		"bms":   "Burmese",
+		"cs":    "&#269;esky",
+		"da":    "Dansk",
+		"de":    "Deutsch",
+		"el":    "&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;&nbsp;(Ellinika)",
+		"en_US": "English",
+		"es":    "Espa&ntilde;ol",
+		"et":    "Estonian",
+		"fa_IR": "&#1601;&#1575;&#1585;&#1587;&#1740; (F&#257;rs&#299;)",
+		"fr":    "Fran&ccedil;ais",
+		"it_IT": "Italiano",
+		"ja":    "&#26085;&#26412;&#35486;&nbsp;(Nihongo)",
+		"nb":    "Norsk&nbsp;(Bokm&aring;l)",
+		"nl":    "Nederlands",
+		"pl":    "Polski",
+		"pt":    "Portugu&ecirc;s",
+		"pt_BR": "Portugu&ecirc;s do Brasil",
+		"ro":    "Rom&acirc;n&#259;",
+		"fi":    "Suomi",
+		"ru":    "&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;&nbsp;(Russkij)",
+		"th":    "Thai",
+		"tr":    "T&uuml;rk&ccedil;e",
+		"uk":    "&#1091;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;&nbsp;(Ukrajins\"ka)",
+		"vi":    "Vietnamese",
+		"zh_CN": "&#20013;&#25991;(&#31616;)",
+	}
+)
+
+func GetExits() map[string]bool {
+	ExitLock.RLock()
+	defer ExitLock.RUnlock()
+	return ExitMap
 }
 
-// rejigger this to not make dns queries
+// load exit list
+func LoadList() {
+
+	file, err := os.Open("public/exit-addresses")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	exits := make(map[string]bool)
+	scan := bufio.NewScanner(file)
+	for scan.Scan() {
+		strs := strings.Fields(scan.Text())
+		if strs[0] == "ExitAddress" {
+			exits[strs[1]] = true
+		}
+	}
+
+	if err = scan.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	// swap in exits
+	ExitLock.Lock()
+	ExitMap = exits
+	ExitLock.Unlock()
+
+}
+
 func IsTor(remoteAddr string) bool {
+
 	if net.ParseIP(remoteAddr).To4() == nil {
 		return false
 	}
-	ips := strings.Split(remoteAddr, ".")
-	var ip string
-	for i := len(ips) - 1; i >= 0; i-- {
-		ip += ips[i] + "."
-	}
-	host := "80.38.229.70.31.ip-port.exitlist.torproject.org"
-	addresses, err := net.LookupHost(ip + host)
-	if err != nil {
-		return false
-	}
-	inTor := true
-	for _, val := range addresses {
-		if val != "127.0.0.2" {
-			inTor = false
-			break
-		}
-	}
-	return inTor
+	return GetExits()[remoteAddr]
+
+	// rejigger this to not make dns queries
+	// ips := strings.Split(remoteAddr, ".")
+	// var ip string
+	// for i := len(ips) - 1; i >= 0; i-- {
+	//   ip += ips[i] + "."
+	// }
+	// host := "80.38.229.70.31.ip-port.exitlist.torproject.org"
+	// addresses, err := net.LookupHost(ip + host)
+	// if err != nil {
+	//   return false
+	// }
+	// inTor := true
+	// for _, val := range addresses {
+	//   if val != "127.0.0.2" {
+	//     inTor = false
+	//     break
+	//   }
+	// }
+	// return inTor
+
 }
 
 func UpToDate(r *http.Request) bool {
@@ -111,7 +162,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 
 	// serve public files
 	if len(r.URL.Path) > 1 {
-		phttp.ServeHTTP(w, r)
+		Phttp.ServeHTTP(w, r)
 		return
 	}
 
@@ -123,7 +174,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 
 	// short circuit for torbutton
 	if len(r.URL.Query().Get("TorButton")) > 0 {
-		layout.ExecuteTemplate(w, "torbutton.html", isTor)
+		Layout.ExecuteTemplate(w, "torbutton.html", isTor)
 		return
 	}
 
@@ -157,11 +208,11 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		Lang(r),
 		host,
 		extra,
-		locales,
+		Locales,
 	}
 
 	// render the template
-	layout.ExecuteTemplate(w, "index.html", p)
+	Layout.ExecuteTemplate(w, "index.html", p)
 
 }
 
@@ -180,7 +231,7 @@ func main() {
 	}
 
 	// add template funcs
-	layout = layout.Funcs(template.FuncMap{
+	Layout = Layout.Funcs(template.FuncMap{
 		"UnEscaped": func(x string) interface{} {
 			return template.HTML(x)
 		},
@@ -193,7 +244,7 @@ func main() {
 	})
 
 	// load layout
-	layout, err = layout.ParseFiles(
+	Layout, err = Layout.ParseFiles(
 		"public/index.html",
 		"public/torbutton.html",
 	)
@@ -201,12 +252,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// load exists
+	LoadList()
+
+	// listen for signal to reload exits
+	s := make(chan os.Signal, 1)
+	signal.Notify(s, syscall.SIGUSR2)
+	go func() {
+		for {
+			<-s
+			LoadList()
+			log.Println("Exit list reloaded.")
+		}
+	}()
+
 	// routes
 	http.HandleFunc("/", RootHandler)
-	phttp.Handle("/", http.FileServer(http.Dir("./public")))
+	Phttp.Handle("/", http.FileServer(http.Dir("./public")))
 
 	// start the server
-	log.Printf("Listening on port: %s", port)
+	log.Printf("Listening on port: %s\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 
 }
