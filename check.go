@@ -169,7 +169,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	// get remote ip
 	host, _, _ := net.SplitHostPort(r.RemoteAddr)
 
-	// determine if we"re in Tor
+	// determine if we're in Tor
 	isTor := IsTor(host)
 
 	// short circuit for torbutton
@@ -179,7 +179,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// string used for classes and such
-	// in the in template
+	// in the template
 	var onOff string
 	if isTor {
 		onOff = "on"
