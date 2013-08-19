@@ -252,7 +252,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// load exists
+	// load exits
 	LoadList()
 
 	// listen for signal to reload exits
