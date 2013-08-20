@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -27,11 +28,30 @@ type Page struct {
 	Locales  map[string]string
 }
 
+type Port struct {
+	min int
+	max int
+}
+
+type Policy struct {
+	accept bool
+	ports  []Port
+}
+
+func (p Policy) CanExit(exitPort int) bool {
+	for _, port := range p.ports {
+		if port.min <= exitPort && exitPort <= port.max {
+			return p.accept
+		}
+	}
+	return !p.accept
+}
+
 var (
 
 	// map the exit list
 	// TODO: investigate other data structures
-	ExitMap  map[string]bool
+	ExitMap  map[string]Policy
 	ExitLock = new(sync.RWMutex)
 
 	// layout template
@@ -71,7 +91,7 @@ var (
 	}
 )
 
-func GetExits() map[string]bool {
+func GetExits() map[string]Policy {
 	ExitLock.RLock()
 	defer ExitLock.RUnlock()
 	return ExitMap
@@ -80,18 +100,41 @@ func GetExits() map[string]bool {
 // load exit list
 func LoadList() {
 
-	file, err := os.Open("public/exit-addresses")
+	file, err := os.Open("data/exit-policies")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
-	exits := make(map[string]bool)
+	exits := make(map[string]Policy)
 	scan := bufio.NewScanner(file)
 	for scan.Scan() {
 		strs := strings.Fields(scan.Text())
-		if strs[0] == "ExitAddress" {
-			exits[strs[1]] = true
+		if len(strs) > 0 {
+			policy := Policy{}
+			if strs[1] == "accept" {
+				policy.accept = true
+			}
+			ports := strings.Split(strs[2], ",")
+			for _, p := range ports {
+				s := strings.Split(p, "-")
+				min, err := strconv.Atoi(s[0])
+				if err != nil {
+					log.Fatal(err)
+				}
+				port := Port{
+					min: min,
+					max: min,
+				}
+				if len(s) > 1 {
+					port.max, err = strconv.Atoi(s[1])
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
+				policy.ports = append(policy.ports, port)
+			}
+			exits[strs[0]] = policy
 		}
 	}
 
@@ -107,32 +150,10 @@ func LoadList() {
 }
 
 func IsTor(remoteAddr string) bool {
-
 	if net.ParseIP(remoteAddr).To4() == nil {
 		return false
 	}
-	return GetExits()[remoteAddr]
-
-	// rejigger this to not make dns queries
-	// ips := strings.Split(remoteAddr, ".")
-	// var ip string
-	// for i := len(ips) - 1; i >= 0; i-- {
-	//   ip += ips[i] + "."
-	// }
-	// host := "80.38.229.70.31.ip-port.exitlist.torproject.org"
-	// addresses, err := net.LookupHost(ip + host)
-	// if err != nil {
-	//   return false
-	// }
-	// inTor := true
-	// for _, val := range addresses {
-	//   if val != "127.0.0.2" {
-	//     inTor = false
-	//     break
-	//   }
-	// }
-	// return inTor
-
+	return GetExits()[remoteAddr].CanExit(443)
 }
 
 func UpToDate(r *http.Request) bool {
