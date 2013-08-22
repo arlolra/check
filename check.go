@@ -57,6 +57,9 @@ var (
 	// layout template
 	Layout = template.New("")
 
+	// public file server
+	Phttp = http.NewServeMux()
+
 	// locales map
 	Locales = map[string]string{
 		"ar":    "&#1593;&#1585;&#1576;&#1610;&#1577;&nbsp;(Arabiya)",
@@ -178,6 +181,12 @@ func Lang(r *http.Request) string {
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 
+	// serve public files
+	if len(r.URL.Path) > 1 {
+		Phttp.ServeHTTP(w, r)
+		return
+	}
+
 	// get remote ip
 	host, _, _ := net.SplitHostPort(r.RemoteAddr)
 
@@ -280,7 +289,11 @@ func main() {
 
 	// routes
 	http.HandleFunc("/", RootHandler)
-	http.Handle("/torcheck/", http.StripPrefix("/torcheck/", http.FileServer(http.Dir("./public"))))
+
+	// files
+	files := http.FileServer(http.Dir("./public"))
+	Phttp.Handle("/torcheck/", http.StripPrefix("/torcheck/", files))
+	Phttp.Handle("/", files)
 
 	// start the server
 	log.Printf("Listening on port: %s\n", port)
