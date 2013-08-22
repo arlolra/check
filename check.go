@@ -191,7 +191,10 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get remote ip
-	host, _, _ := net.SplitHostPort(r.RemoteAddr)
+	host := r.Header.Get("X-Forwarded-For")
+	if len(host) == 0 {
+		host, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
 
 	// determine if we're in Tor
 	isTor := IsTor(host)
