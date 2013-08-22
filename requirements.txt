@@ -1,1 +1,1 @@
-stem==1.0.1
+-e git+https://git.torproject.org/stem.git@d092810bb9810f4dfeb244b71ae10bd6031b52b3#egg=stem
