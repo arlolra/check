@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Are you using Tor?</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <link rel="stylesheet" type="text/css" href="css/check.css" />
+  <link rel="stylesheet" type="text/css" href="torcheck/css/check.css" />
 </head>
 <body>
   {{ if .NotSmall }}
-    <p><img src="img/tor-{{ .OnOff }}.png" /></p>
+    <p><img src="torcheck/img/tor-{{ .OnOff }}.png" /></p>
   {{ end }}
   <h1 class="{{ .OnOff }}">
     {{ if .IsTor }}
