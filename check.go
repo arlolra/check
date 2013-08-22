@@ -39,6 +39,9 @@ type Policy struct {
 }
 
 func (p Policy) CanExit(exitPort int) bool {
+	if len(p.ports) == 0 {
+		return false
+	}
 	for _, port := range p.ports {
 		if port.min <= exitPort && exitPort <= port.max {
 			return p.accept
