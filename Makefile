@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 start:
-	@check
+	@./check
 
 build:
 	go fmt check.go
