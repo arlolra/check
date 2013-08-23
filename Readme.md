@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/arlolra/check.png?branch=master)](https://travis-ci.org/arlolra/check)
+
 == A new check.torproject.org, hopefully
 
   | Check could really use some love. Any volunteers please?
