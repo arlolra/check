@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulk Tor Exit Exporter</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="/css/check.css" />
+</head>
+<body>
+  <p><img src="/img/tor-on.png" /></p>
+  <p>Welcome to the Tor Bulk Exit List exporting tool.</p>
+  <p>If you are a service provider and you wish to build a list of possible Tor nodes that might contact one of your servers, enter that single server address below. Giving you the whole list means you can query the list privately, rather than telling us your users' IP addresses. This list allows you to have a nearly real time authoritative source for Tor exits that allow contacting your server on port 80. While we don't log the IP address that queries for a given list, we do keep a cache of answers for all queries made. This is purely for performance reasons and they are automatically deleted after a given threshold. If you'd like, you're free to run your own copy of this program. It's Free Software and can be downloaded from the <a href="https://svn.torproject.org/svn/check/trunk/cgi-bin/TorBulkExitList.py">Tor subversion repository</a>.</p>
+  <form action="/cgi-bin/TorBulkExitList.py" name="ip">
+    <div>
+      <input type="text" name="ip" /><br />
+      <input type="submit" value="Submit" />
+    </div>
+  </form>
+</body>
+</html>

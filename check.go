@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 )
 
 // page model
@@ -56,6 +57,7 @@ var (
 	// TODO: investigate other data structures
 	ExitMap  map[string]Policy
 	ExitLock = new(sync.RWMutex)
+	GenTime  time.Time
 
 	// layout template
 	Layout = template.New("")
@@ -148,6 +150,7 @@ func LoadList() {
 	// swap in exits
 	ExitLock.Lock()
 	ExitMap = exits
+	GenTime = time.Now()
 	ExitLock.Unlock()
 
 }
@@ -243,6 +246,36 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func BulkHandler(w http.ResponseWriter, r *http.Request) {
+
+	host := r.URL.Query().Get("ip")
+	if net.ParseIP(host).To4() == nil {
+		Layout.ExecuteTemplate(w, "bulk.html", nil)
+		return
+	}
+
+	port_str := r.URL.Query().Get("port")
+	port, err := strconv.Atoi(port_str)
+	port_str = "&port=" + port_str
+	if err != nil {
+		port = 80
+		port_str = ""
+	}
+
+	fmt.Fprintf(w, "# This is a list of all Tor exit nodes that can contact %s on Port %d #\n", "X", port)
+
+	fmt.Fprintf(w, "# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%s #\n", "X", port_str)
+
+	fmt.Fprintf(w, "# This file was generated on %v #\n", GenTime.UTC().Format(time.UnixDate))
+
+	for key, val := range GetExits() {
+		if val.CanExit(port) {
+			fmt.Fprintf(w, "%s\n", key)
+		}
+	}
+
+}
+
 func main() {
 
 	// determine which port to run on
@@ -273,6 +306,7 @@ func main() {
 	// load layout
 	Layout, err = Layout.ParseFiles(
 		"public/index.html",
+		"public/bulk.html",
 		"public/torbutton.html",
 	)
 	if err != nil {
@@ -295,6 +329,8 @@ func main() {
 
 	// routes
 	http.HandleFunc("/", RootHandler)
+	http.HandleFunc("/torbulkexitlist", BulkHandler)
+	http.HandleFunc("/cgi-bin/TorBulkExitList.py", BulkHandler)
 
 	// files
 	files := http.FileServer(http.Dir("./public"))
