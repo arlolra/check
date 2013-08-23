@@ -2,10 +2,10 @@
 
 == A new check.torproject.org, hopefully
 
-  | Check could really use some love. Any volunteers please?
-  |   --Roger
-  |
-  | https://lists.torproject.org/pipermail/tor-talk/2013-August/029306.html
+  > Check could really use some love. Any volunteers please?
+  >   --Roger
+  >
+  > https://lists.torproject.org/pipermail/tor-talk/2013-August/029306.html
 
 == Setup
 
