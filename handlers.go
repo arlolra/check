@@ -1,15 +1,15 @@
 package main
 
 import (
-    "net/http"
-    "net"
-    "strconv"
-    "html/template"
+	"html/template"
+	"net"
+	"net/http"
+	"strconv"
 )
 
 // layout template
 var (
-    Layout = template.New("")
+	Layout = template.New("")
 	// locales map
 	Locales = map[string]string{
 		"ar":    "&#1593;&#1585;&#1576;&#1610;&#1577;&nbsp;(Arabiya)",
@@ -103,30 +103,30 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		!small,
 		onOff,
 		Lang(r),
-        host,
-        extra,
-        Locales,
-    }
+		host,
+		extra,
+		Locales,
+	}
 
-    // render the template
-    Layout.ExecuteTemplate(w, "index.html", p)
+	// render the template
+	Layout.ExecuteTemplate(w, "index.html", p)
 
 }
 
 func BulkHandler(w http.ResponseWriter, r *http.Request) {
-    host := r.URL.Query().Get("ip")
-    if net.ParseIP(host).To4() == nil {
-        Layout.ExecuteTemplate(w, "bulk.html", nil)
-        return
-    }
+	host := r.URL.Query().Get("ip")
+	if net.ParseIP(host).To4() == nil {
+		Layout.ExecuteTemplate(w, "bulk.html", nil)
+		return
+	}
 
-    port_str := r.URL.Query().Get("port")
-    port, err := strconv.Atoi(port_str)
-    port_str = "&port=" + port_str
-    if err != nil {
-        port = 80
-        port_str = ""
-    }
+	port_str := r.URL.Query().Get("port")
+	port, err := strconv.Atoi(port_str)
+	port_str = "&port=" + port_str
+	if err != nil {
+		port = 80
+		port_str = ""
+	}
 
-    exits.Dump(&w, port)
+	exits.Dump(&w, port)
 }

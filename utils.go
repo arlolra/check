@@ -1,8 +1,8 @@
 package main
 
 import (
-    "net"
-    "net/http"
+	"net"
+	"net/http"
 )
 
 func IsTor(remoteAddr string) bool {
@@ -34,4 +34,3 @@ func Lang(r *http.Request) string {
 	}
 	return lang
 }
-

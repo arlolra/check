@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
-    "html/template"
 )
 
-var	Phttp = http.NewServeMux()
+var Phttp = http.NewServeMux()
 
 func main() {
 
@@ -48,8 +48,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-    // Load Tor Exits into exits and listen for SIGUSR2 to reload
-    exits.Run()
+	// Load Tor Exits into exits and listen for SIGUSR2 to reload
+	exits.Run()
 
 	// routes
 	http.HandleFunc("/", RootHandler)
