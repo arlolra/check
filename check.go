@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
 	"html/template"
@@ -11,10 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
-	"sync"
 	"syscall"
-	"time"
 )
 
 // page model
@@ -29,35 +25,11 @@ type Page struct {
 	Locales  map[string]string
 }
 
-type Port struct {
-	min int
-	max int
-}
-
-type Policy struct {
-	accept bool
-	ports  []Port
-}
-
-func (p Policy) CanExit(exitPort int) bool {
-	if len(p.ports) == 0 {
-		return false
-	}
-	for _, port := range p.ports {
-		if port.min <= exitPort && exitPort <= port.max {
-			return p.accept
-		}
-	}
-	return !p.accept
-}
-
 var (
 
 	// map the exit list
 	// TODO: investigate other data structures
-	ExitMap  map[string]Policy
-	ExitLock = new(sync.RWMutex)
-	GenTime  time.Time
+    exits Exits
 
 	// layout template
 	Layout = template.New("")
@@ -96,70 +68,11 @@ var (
 	}
 )
 
-func GetExits() map[string]Policy {
-	ExitLock.RLock()
-	defer ExitLock.RUnlock()
-	return ExitMap
-}
-
-// load exit list
-func LoadList() {
-
-	file, err := os.Open("data/exit-policies")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	exits := make(map[string]Policy)
-	scan := bufio.NewScanner(file)
-	for scan.Scan() {
-		strs := strings.Fields(scan.Text())
-		if len(strs) > 0 {
-			policy := Policy{}
-			if strs[1] == "accept" {
-				policy.accept = true
-			}
-			ports := strings.Split(strs[2], ",")
-			for _, p := range ports {
-				s := strings.Split(p, "-")
-				min, err := strconv.Atoi(s[0])
-				if err != nil {
-					log.Fatal(err)
-				}
-				port := Port{
-					min: min,
-					max: min,
-				}
-				if len(s) > 1 {
-					port.max, err = strconv.Atoi(s[1])
-					if err != nil {
-						log.Fatal(err)
-					}
-				}
-				policy.ports = append(policy.ports, port)
-			}
-			exits[strs[0]] = policy
-		}
-	}
-
-	if err = scan.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	// swap in exits
-	ExitLock.Lock()
-	ExitMap = exits
-	GenTime = time.Now()
-	ExitLock.Unlock()
-
-}
-
 func IsTor(remoteAddr string) bool {
 	if net.ParseIP(remoteAddr).To4() == nil {
 		return false
 	}
-	return GetExits()[remoteAddr].CanExit(443)
+	return exits.list[remoteAddr].CanExit(443)
 }
 
 func UpToDate(r *http.Request) bool {
@@ -186,7 +99,6 @@ func Lang(r *http.Request) string {
 }
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
-
 	// serve public files
 	if len(r.URL.Path) > 1 {
 		Phttp.ServeHTTP(w, r)
@@ -247,7 +159,6 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func BulkHandler(w http.ResponseWriter, r *http.Request) {
-
 	host := r.URL.Query().Get("ip")
 	if net.ParseIP(host).To4() == nil {
 		Layout.ExecuteTemplate(w, "bulk.html", nil)
@@ -262,18 +173,7 @@ func BulkHandler(w http.ResponseWriter, r *http.Request) {
 		port_str = ""
 	}
 
-	fmt.Fprintf(w, "# This is a list of all Tor exit nodes that can contact %s on Port %d #\n", "X", port)
-
-	fmt.Fprintf(w, "# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%s #\n", "X", port_str)
-
-	fmt.Fprintf(w, "# This file was generated on %v #\n", GenTime.UTC().Format(time.UnixDate))
-
-	for key, val := range GetExits() {
-		if val.CanExit(port) {
-			fmt.Fprintf(w, "%s\n", key)
-		}
-	}
-
+	exits.Dump(&w, port)
 }
 
 func main() {
@@ -314,7 +214,7 @@ func main() {
 	}
 
 	// load exits
-	LoadList()
+    exits.Load()
 
 	// listen for signal to reload exits
 	s := make(chan os.Signal, 1)
@@ -322,7 +222,7 @@ func main() {
 	go func() {
 		for {
 			<-s
-			LoadList()
+			exits.Load()
 			log.Println("Exit list reloaded.")
 		}
 	}()
