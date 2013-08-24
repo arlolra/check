@@ -9,7 +9,11 @@ import (
     "log"
     "net/http"
     "strconv"
+    "os/signal"
+    "syscall"
 )
+
+var exits Exits
 
 type Port struct {
 	min int
@@ -36,6 +40,7 @@ func (p Policy) CanExit(exitPort int) bool {
 type Exits struct {
     list       map[string]Policy
     updateTime time.Time
+    reloadChan chan os.Signal
 }
 
 func (e *Exits) Dump(w *http.ResponseWriter, port int) {
@@ -50,7 +55,7 @@ func (e *Exits) Dump(w *http.ResponseWriter, port int) {
 	}
 }
 
-func (e *Exits) Load() {
+func (e *Exits) load() {
 	file, err := os.Open("data/exit-policies")
 	if err != nil {
 		log.Fatal(err)
@@ -96,4 +101,17 @@ func (e *Exits) Load() {
     // swap in exits
     e.list = exits
     e.updateTime = time.Now()
+}
+
+func (e *Exits) Run() {
+    e.reloadChan = make(chan os.Signal, 1)
+    signal.Notify(e.reloadChan, syscall.SIGUSR2)
+    e.reloadChan <-syscall.SIGUSR2
+	go func() {
+		for {
+			<-e.reloadChan
+			exits.load()
+			log.Println("Exit list reloaded.")
+		}
+	}()
 }
