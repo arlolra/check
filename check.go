@@ -4,7 +4,6 @@ import (
 	"check"
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -28,30 +27,6 @@ func main() {
 	Exits := new(check.Exits)
 	Exits.Run()
 
-	// add template funcs
-	Layout := template.New("")
-	Layout = Layout.Funcs(template.FuncMap{
-		"UnEscaped": func(x string) interface{} {
-			return template.HTML(x)
-		},
-		"UnEscapedURL": func(x string) interface{} {
-			return template.URL(x)
-		},
-		"GetText": func(lang string, text string) string {
-			return domain.GetText(lang, text)
-		},
-	})
-
-	// load layout
-	Layout, err = Layout.ParseFiles(
-		"public/index.html",
-		"public/bulk.html",
-		"public/torbutton.html",
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// files
 	files := http.FileServer(http.Dir("./public"))
 	Phttp := http.NewServeMux()
@@ -59,8 +34,8 @@ func main() {
 	Phttp.Handle("/", files)
 
 	// routes
-	http.HandleFunc("/", check.RootHandler(Layout, Exits, Phttp))
-	bulk := check.BulkHandler(Layout, Exits)
+	http.HandleFunc("/", check.RootHandler(check.CompileTemplate(domain, "index.html"), Exits, Phttp))
+	bulk := check.BulkHandler(check.CompileTemplate(domain, "bulk.html"), Exits)
 	http.HandleFunc("/torbulkexitlist", bulk)
 	http.HandleFunc("/cgi-bin/TorBulkExitList.py", bulk)
 
