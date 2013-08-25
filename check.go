@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./lib"
+	"check"
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
 	"html/template"

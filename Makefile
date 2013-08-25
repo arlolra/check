@@ -1,10 +1,12 @@
 SHELL := /bin/bash
 
+export GOPATH := $(CURDIR):$(GOPATH)
+
 start:
 	@./check
 
 build:
-	go fmt ./lib
+	go fmt ./src/check
 	go fmt
 	go build
 
