@@ -1,16 +1,6 @@
-package main
+package check
 
-import (
-	"net"
-	"net/http"
-)
-
-func IsTor(remoteAddr string) bool {
-	if net.ParseIP(remoteAddr).To4() == nil {
-		return false
-	}
-	return exits.list[remoteAddr].CanExit(443)
-}
+import "net/http"
 
 func UpToDate(r *http.Request) bool {
 	if r.URL.Query().Get("uptodate") == "0" {
@@ -26,7 +16,6 @@ func Small(r *http.Request) bool {
 	return false
 }
 
-// determine which language to use. default to english
 func Lang(r *http.Request) string {
 	lang := r.URL.Query().Get("lang")
 	if len(lang) == 0 {

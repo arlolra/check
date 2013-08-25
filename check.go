@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./lib"
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
 	"html/template"
@@ -8,8 +9,6 @@ import (
 	"net/http"
 	"os"
 )
-
-var Phttp = http.NewServeMux()
 
 func main() {
 
@@ -25,7 +24,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Load Tor exits and listen for SIGUSR2 to reload
+	Exits := new(check.Exits)
+	Exits.Run()
+
 	// add template funcs
+	Layout := template.New("")
 	Layout = Layout.Funcs(template.FuncMap{
 		"UnEscaped": func(x string) interface{} {
 			return template.HTML(x)
@@ -48,18 +52,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Load Tor Exits into exits and listen for SIGUSR2 to reload
-	exits.Run()
-
-	// routes
-	http.HandleFunc("/", RootHandler)
-	http.HandleFunc("/torbulkexitlist", BulkHandler)
-	http.HandleFunc("/cgi-bin/TorBulkExitList.py", BulkHandler)
-
 	// files
 	files := http.FileServer(http.Dir("./public"))
+	Phttp := http.NewServeMux()
 	Phttp.Handle("/torcheck/", http.StripPrefix("/torcheck/", files))
 	Phttp.Handle("/", files)
+
+	// routes
+	http.HandleFunc("/", check.RootHandler(Layout, Exits, Phttp))
+	bulk := check.BulkHandler(Layout, Exits)
+	http.HandleFunc("/torbulkexitlist", bulk)
+	http.HandleFunc("/cgi-bin/TorBulkExitList.py", bulk)
 
 	// start the server
 	log.Printf("Listening on port: %s\n", port)

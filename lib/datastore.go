@@ -1,10 +1,10 @@
-package main
+package check
 
 import (
 	"bufio"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"os"
 	"os/signal"
 	"strconv"
@@ -12,8 +12,6 @@ import (
 	"syscall"
 	"time"
 )
-
-var exits Exits
 
 type Port struct {
 	min int
@@ -43,19 +41,28 @@ type Exits struct {
 	reloadChan chan os.Signal
 }
 
-func (e *Exits) Dump(w *http.ResponseWriter, port int) {
-	fmt.Fprintf(*w, "# This is a list of all Tor exit nodes that can contact %s on Port %d #\n", "X", port)
-	fmt.Fprintf(*w, "# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%d #\n", "X", port)
-	fmt.Fprintf(*w, "# This file was generated on %v #\n", e.updateTime.UTC().Format(time.UnixDate))
+func (e *Exits) Dump(port int) string {
+	str := fmt.Sprintf("# This is a list of all Tor exit nodes that can contact %s on Port %d #\n", "X", port)
+	str += fmt.Sprintf("# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%d #\n", "X", port)
+	str += fmt.Sprintf("# This file was generated on %v #\n", e.updateTime.UTC().Format(time.UnixDate))
 
 	for key, val := range e.list {
 		if val.CanExit(port) {
-			fmt.Fprintf(*w, "%s\n", key)
+			str += fmt.Sprintf("%s\n", key)
 		}
 	}
+
+	return str
 }
 
-func (e *Exits) load() {
+func (e *Exits) IsTor(remoteAddr string, port int) bool {
+	if net.ParseIP(remoteAddr).To4() == nil {
+		return false
+	}
+	return e.list[remoteAddr].CanExit(port)
+}
+
+func (e *Exits) Load() {
 	file, err := os.Open("data/exit-policies")
 	if err != nil {
 		log.Fatal(err)
@@ -106,12 +113,12 @@ func (e *Exits) load() {
 func (e *Exits) Run() {
 	e.reloadChan = make(chan os.Signal, 1)
 	signal.Notify(e.reloadChan, syscall.SIGUSR2)
-	e.reloadChan <- syscall.SIGUSR2
 	go func() {
 		for {
 			<-e.reloadChan
-			exits.load()
+			e.Load()
 			log.Println("Exit list reloaded.")
 		}
 	}()
+	e.Load()
 }

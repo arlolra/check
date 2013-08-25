@@ -4,8 +4,9 @@ start:
 	@./check
 
 build:
-	go fmt *.go
-	go build *.go
+	go fmt ./lib
+	go fmt
+	go build
 
 i18n:
 	rm -rf locale
