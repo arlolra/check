@@ -7,4 +7,6 @@ install:
   - go get github.com/samuel/go-gettext/gettext
 
 script:
+  - pushd $TRAVIS_BUILD_DIR
   - make build
+  - popd
