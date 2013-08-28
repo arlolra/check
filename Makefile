@@ -1,11 +1,19 @@
 SHELL := /bin/bash
 
-start:
+fresh: clean start
+
+start: check
 	@./check
 
-build:
-	go fmt check.go
-	go build check.go
+check: 
+	@echo "Generating new build"
+	go fmt *.go
+	go build *.go
+
+build: clean check
+
+clean: 
+	@(rm ./check 2&>1) || true 
 
 i18n:
 	rm -rf locale
@@ -20,4 +28,4 @@ i18n:
 		fi \
 	done
 
-.PHONY: start build i18n
+.PHONY: start build i18n clean
