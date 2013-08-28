@@ -1,4 +1,4 @@
-package main
+package check
 
 import (
 	"io"
@@ -6,7 +6,12 @@ import (
 	"net/http"
 )
 
-func hiddenServiceHandler(w http.ResponseWriter, r *http.Request) {
+var (
+	HIDDEN_SERVICE_HOSTNAME_PATH = Env("HIDDEN_SERVICE_HOSTNAME_PATH", "./hidden_service/hostname")
+	ONION_DOMAIN                 = loadHiddenServiceHostname()
+)
+
+func HiddenServiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle asset requests (favicon etc)
 	if assetHandler(w, r) {
 		return

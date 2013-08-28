@@ -1,5 +1,9 @@
 package main
 
+import (
+	"check"
+)
+
 /*
 	Alternative implementation - probably a bit slower but less reliant on exit list's freshness:
 
@@ -12,17 +16,12 @@ package main
 			If a timeout is reached, retry a few times
 */
 var (
-	HIDDEN_SERVICE_HOSTNAME_PATH = env("HIDDEN_SERVICE_HOSTNAME_PATH", "./hidden_service/hostname")
-	ONION_PORT                   = env("ONIONPORT", "8000")
-	WEB_PORT                     = env("PORT", "8080")
-	MAX_TIMEOUTS                 = 5
-	ONION_DOMAIN                 = loadHiddenServiceHostname()
-
-	pending = make(map[Identifier]chan bool)
+	ONION_PORT = check.Env("ONIONPORT", "8000")
+	WEB_PORT   = check.Env("PORT", "8080")
 )
 
 func main() {
-	setupCPU()
-	go startServer(ONION_PORT, "Hidden", hiddenServiceHandler)
-	startServer(WEB_PORT, "Web", webHandler)
+	check.SetupCPU()
+	go check.StartServer(ONION_PORT, "Hidden", check.HiddenServiceHandler)
+	check.StartServer(WEB_PORT, "Web", check.WebHandler)
 }

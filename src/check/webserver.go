@@ -1,4 +1,4 @@
-package main
+package check
 
 import (
 	"fmt"
@@ -8,7 +8,12 @@ import (
 	"time"
 )
 
-func webHandler(w http.ResponseWriter, r *http.Request) {
+var (
+	MAX_TIMEOUTS = 5
+	pending      = make(map[Identifier]chan bool)
+)
+
+func WebHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle asset requests (favicon etc)
 	if assetHandler(w, r) {
 		return

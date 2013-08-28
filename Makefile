@@ -1,4 +1,5 @@
 SHELL := /bin/bash
+export GOPATH := $(CURDIR):$(GOPATH)
 
 fresh: clean start
 
@@ -7,13 +8,14 @@ start: check
 
 check: 
 	@echo "Generating new build"
-	go fmt *.go
-	go build *.go
+	go fmt ./src/check
+	go fmt
+	go build
 
 build: clean check
 
 clean: 
-	@(rm ./check 2&>1) || true 
+	@(rm ./check )|| true 
 
 i18n:
 	rm -rf locale

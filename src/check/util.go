@@ -1,4 +1,4 @@
-package main
+package check
 
 import (
 	"fmt"
@@ -38,14 +38,14 @@ func assetHandler(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
-func startServer(port, serverName string, handler http.HandlerFunc) {
+func StartServer(port, serverName string, handler http.HandlerFunc) {
 	log.Printf("%s service listening on port: %s\n", serverName, port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), http.HandlerFunc(handler)))
 }
 
 // Looks for an environment variable `varname`,
 // else use provided `defaultval` value
-func env(varname, defaultval string) string {
+func Env(varname, defaultval string) string {
 	temp := os.Getenv(varname)
 	if len(temp) == 0 {
 		temp = defaultval
@@ -55,7 +55,7 @@ func env(varname, defaultval string) string {
 }
 
 // Ensure we're running goroutines across all available logical cores
-func setupCPU() {
+func SetupCPU() {
 	cpuCount := runtime.NumCPU()
 	runtime.GOMAXPROCS(cpuCount)
 	log.Printf("Starting services with %v CPUs active", cpuCount)

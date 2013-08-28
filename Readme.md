@@ -16,7 +16,7 @@
     make i18n
     make 
 
-  for exitips.py:
+  for scripts/exitips.py:
 
     pip install -r requirements.txt
 

@@ -1,13 +1,7 @@
-<!doctype html>
-<html lang="{{ .Lang }}">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Are you using Tor?</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <link rel="stylesheet" type="text/css" href="torcheck/css/check.css" />
-</head>
-<body>
+{{ template "base.html" . }}
+{{ define "lang" }}{{ .Lang }}{{ end }}
+{{ define "title" }}Are you using Tor?{{ end }}
+{{ define "body" }}
   {{ if .NotSmall }}
     <p><img src="torcheck/img/tor-{{ .OnOff }}.png" /></p>
   {{ end }}
@@ -39,5 +33,4 @@
       <li><a href="/?lang={{ $k }}{{ $out.Extra | UnEscapedURL }}">{{ $i | UnEscaped }}</a></li>
     {{ end }}
   </ul>
-</body>
-</html>
+{{ end }}
