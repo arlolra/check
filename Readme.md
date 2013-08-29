@@ -14,8 +14,7 @@
     apt-get install gettext
     go get github.com/samuel/go-gettext/gettext
     make i18n
-    make build
-    make start
+    make 
 
   for scripts/exitips.py:
 

@@ -1,2 +1,5 @@
 /check
 /locale
+/hidden_service
+src/stem
+src/pip-delete*

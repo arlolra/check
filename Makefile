@@ -1,14 +1,21 @@
 SHELL := /bin/bash
-
 export GOPATH := $(CURDIR):$(GOPATH)
 
-start:
+fresh: clean start
+
+start: check
 	@./check
 
-build:
+check: 
+	@echo "Generating new build"
 	go fmt ./src/check
 	go fmt
 	go build
+
+build: clean check
+
+clean: 
+	@(rm ./check )|| true 
 
 i18n:
 	rm -rf locale
@@ -23,4 +30,4 @@ i18n:
 		fi \
 	done
 
-.PHONY: start build i18n
+.PHONY: start build i18n clean
