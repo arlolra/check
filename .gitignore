@@ -1,4 +1,5 @@
-/data/exit-policies
+/public/exit-addresses
+/data
 /check.pid
 /check
 /locale
