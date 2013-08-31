@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 var (
@@ -65,12 +66,18 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 
 		// get remote ip
 		host := r.Header.Get("X-Forwarded-For")
+		var err error
 		if len(host) == 0 {
-			host, _, _ = net.SplitHostPort(r.RemoteAddr)
+			host, _, err = net.SplitHostPort(r.RemoteAddr)
 		}
 
 		// determine if we're in Tor
-		isTor := Exits.IsTor(host, 443)
+		var isTor bool
+		if err != nil {
+			isTor = false
+		} else {
+			isTor = Exits.IsTor(host)
+		}
 
 		// short circuit for torbutton
 		if len(r.URL.Query().Get("TorButton")) > 0 {
@@ -126,8 +133,8 @@ func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWrit
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		host := r.URL.Query().Get("ip")
-		if net.ParseIP(host).To4() == nil {
+		ip := r.URL.Query().Get("ip")
+		if net.ParseIP(ip) == nil {
 			if err := Layout.ExecuteTemplate(w, "bulk.html", nil); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
@@ -142,7 +149,11 @@ func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWrit
 			port_str = ""
 		}
 
-		fmt.Fprintf(w, Exits.Dump(port))
+		str := fmt.Sprintf("# This is a list of all Tor exit nodes that can contact %s on Port %d #\n", ip, port)
+		str += fmt.Sprintf("# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%s #\n", ip, port_str)
+		str += fmt.Sprintf("# This file was generated on %v #\n", Exits.UpdateTime.UTC().Format(time.UnixDate))
+		str += Exits.Dump(ip, port)
+		fmt.Fprintf(w, str)
 
 	}
 

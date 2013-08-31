@@ -1,65 +1,95 @@
 package check
 
 import (
-	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"strconv"
-	"strings"
 	"syscall"
 	"time"
 )
 
-type Port struct {
-	min int
-	max int
+// stem's ExitPolicyRule class, sort of
+type Rule struct {
+	IsAccept  bool
+	Address   string
+	AddressIP net.IP
+	MinPort   int
+	MaxPort   int
+}
+
+func ValidPort(port int) bool {
+	return port >= 0 && port < 65536
+}
+
+func (r Rule) IsMatch(ap AddressPort) bool {
+	address := net.ParseIP(ap.Address)
+	if address == nil {
+		return false
+	}
+	if r.AddressIP != nil && !r.AddressIP.Equal(address) {
+		return false
+	}
+	if !ValidPort(ap.Port) || ap.Port < r.MinPort || ap.Port > r.MaxPort {
+		return false
+	}
+	return true
+}
+
+type AddressPort struct {
+	Address string
+	Port    int
 }
 
 type Policy struct {
-	accept bool
-	ports  []Port
+	Address      string
+	Rules        []Rule
+	CanExitCache map[AddressPort]bool
 }
 
-func (p Policy) CanExit(exitPort int) bool {
-	if len(p.ports) == 0 {
-		return false
-	}
-	for _, port := range p.ports {
-		if port.min <= exitPort && exitPort <= port.max {
-			return p.accept
+func (p Policy) CanExit(ap AddressPort) bool {
+	can, ok := p.CanExitCache[ap]
+	if !ok {
+		can = false
+		for _, rule := range p.Rules {
+			if rule.IsMatch(ap) {
+				can = rule.IsAccept
+				break
+			}
 		}
+		p.CanExitCache[ap] = can
 	}
-	return !p.accept
+	return can
 }
 
 type Exits struct {
-	list       map[string]Policy
-	updateTime time.Time
-	reloadChan chan os.Signal
+	List       map[string]Policy
+	UpdateTime time.Time
+	ReloadChan chan os.Signal
 }
 
-func (e *Exits) Dump(port int) string {
-	str := fmt.Sprintf("# This is a list of all Tor exit nodes that can contact %s on Port %d #\n", "X", port)
-	str += fmt.Sprintf("# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%d #\n", "X", port)
-	str += fmt.Sprintf("# This file was generated on %v #\n", e.updateTime.UTC().Format(time.UnixDate))
-
-	for key, val := range e.list {
-		if val.CanExit(port) {
+func (e *Exits) Dump(ip string, port int) string {
+	ap := AddressPort{ip, port}
+	var str string
+	for key, val := range e.List {
+		if val.CanExit(ap) {
 			str += fmt.Sprintf("%s\n", key)
 		}
 	}
-
 	return str
 }
 
-func (e *Exits) IsTor(remoteAddr string, port int) bool {
-	if net.ParseIP(remoteAddr).To4() == nil {
-		return false
+var DefaultTarget = AddressPort{"38.229.70.31", 443}
+
+func (e *Exits) IsTor(remoteAddr string) bool {
+	policy, ok := e.List[remoteAddr]
+	if ok {
+		return policy.CanExit(DefaultTarget)
 	}
-	return e.list[remoteAddr].CanExit(port)
+	return false
 }
 
 func (e *Exits) Load() {
@@ -70,52 +100,32 @@ func (e *Exits) Load() {
 	defer file.Close()
 
 	exits := make(map[string]Policy)
-	scan := bufio.NewScanner(file)
-	for scan.Scan() {
-		strs := strings.Fields(scan.Text())
-		if len(strs) > 0 {
-			policy := Policy{}
-			if strs[1] == "accept" {
-				policy.accept = true
-			}
-			ports := strings.Split(strs[2], ",")
-			for _, p := range ports {
-				s := strings.Split(p, "-")
-				min, err := strconv.Atoi(s[0])
-				if err != nil {
-					log.Fatal(err)
-				}
-				port := Port{
-					min: min,
-					max: min,
-				}
-				if len(s) > 1 {
-					port.max, err = strconv.Atoi(s[1])
-					if err != nil {
-						log.Fatal(err)
-					}
-				}
-				policy.ports = append(policy.ports, port)
-			}
-			exits[strs[0]] = policy
+	dec := json.NewDecoder(file)
+	for {
+		var p Policy
+		if err = dec.Decode(&p); err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatal(err)
 		}
-	}
-
-	if err = scan.Err(); err != nil {
-		log.Fatal(err)
+		for _, r := range p.Rules {
+			r.AddressIP = net.ParseIP(r.Address)
+		}
+		p.CanExitCache = make(map[AddressPort]bool)
+		exits[p.Address] = p
 	}
 
 	// swap in exits
-	e.list = exits
-	e.updateTime = time.Now()
+	e.List = exits
+	e.UpdateTime = time.Now()
 }
 
 func (e *Exits) Run() {
-	e.reloadChan = make(chan os.Signal, 1)
-	signal.Notify(e.reloadChan, syscall.SIGUSR2)
+	e.ReloadChan = make(chan os.Signal, 1)
+	signal.Notify(e.ReloadChan, syscall.SIGUSR2)
 	go func() {
 		for {
-			<-e.reloadChan
+			<-e.ReloadChan
 			e.Load()
 			log.Println("Exit list reloaded.")
 		}
