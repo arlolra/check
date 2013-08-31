@@ -11,6 +11,18 @@ import (
 
 func main() {
 
+	// write pid
+	pid, err := os.Create("check.pid")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err = fmt.Fprintf(pid, "%d\n", os.Getpid()); err != nil {
+		log.Fatal(err)
+	}
+	if err = pid.Close(); err != nil {
+		log.Fatal(err)
+	}
+
 	// determine which port to run on
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
