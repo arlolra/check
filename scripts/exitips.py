@@ -19,9 +19,9 @@ for descriptor in parse_file("public/exit-addresses", "tordnsel 1.0"):
 with open("data/exit-policies", "w") as exit_file:
     for router in parse_file("data/consensus",
                              "network-status-consensus-3 1.0"):
-        if router.fingerprint in exits and \
-                router.exit_policy.is_exiting_allowed():
-            r = Router(exits[router.fingerprint])
+        if router.exit_policy.is_exiting_allowed():
+            r = Router(exits[router.fingerprint] if router.fingerprint in exits
+                       else router.address)
             for x in router.exit_policy._get_rules():
                 r.Rules.append({
                     "Address": x.address,
