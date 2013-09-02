@@ -3,7 +3,7 @@
 {{ define "title" }}Are you using Tor?{{ end }}
 {{ define "body" }}
   {{ if .NotSmall }}
-    <p><img src="torcheck/img/tor-{{ .OnOff }}.png" /></p>
+    <p><img src="torcheck/img/tor-{{ .OnOff }}.png" class="onion" /></p>
   {{ end }}
   <h1 class="{{ .OnOff }}">
     {{ if .IsTor }}
