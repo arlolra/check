@@ -7,8 +7,9 @@ from stem.descriptor import parse_file
 
 
 class Router():
-    def __init__(self, address):
-        self.Address = address
+    def __init__(self, router):
+        self.Address = router.address
+        self.IsAllowedDefault = router.exit_policy._is_allowed_default
         self.Rules = []
 
 exits = {}
@@ -20,8 +21,9 @@ with open("data/exit-policies", "w") as exit_file:
     for router in parse_file("data/consensus",
                              "network-status-consensus-3 1.0"):
         if router.exit_policy.is_exiting_allowed():
-            r = Router(exits[router.fingerprint] if router.fingerprint in exits
-                       else router.address)
+            r = Router(router)
+            if router.fingerprint in exits:
+                r.Address = exits[router.fingerprint]
             for x in router.exit_policy._get_rules():
                 r.Rules.append({
                     "Address": x.address,

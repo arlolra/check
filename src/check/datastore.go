@@ -45,15 +45,16 @@ type AddressPort struct {
 }
 
 type Policy struct {
-	Address      string
-	Rules        []Rule
-	CanExitCache map[AddressPort]bool
+	Address          string
+	Rules            []Rule
+	IsAllowedDefault bool
+	CanExitCache     map[AddressPort]bool
 }
 
 func (p Policy) CanExit(ap AddressPort) bool {
 	can, ok := p.CanExitCache[ap]
 	if !ok {
-		can = false
+		can = p.IsAllowedDefault
 		for _, rule := range p.Rules {
 			if rule.IsMatch(ap) {
 				can = rule.IsAccept
