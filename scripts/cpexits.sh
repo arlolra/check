@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cp /srv/tordnsel.torproject.org/state/exit-addresses /home/arlo/git/check/public/exit-addresses
+cat /srv/tordnsel.torproject.org/state/exit-addresses /srv/tordnsel.torproject.org/state/exit-addresses.new > /home/arlo/git/check/public/exit-addresses
 cp /home/arlo/.tor/cached-consensus /home/arlo/git/check/data/consensus
 
 cd /home/arlo/git/check
