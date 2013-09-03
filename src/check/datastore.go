@@ -1,7 +1,6 @@
 package check
 
 import (
-	"bytes"
 	"encoding/json"
 	"io"
 	"log"
@@ -81,16 +80,11 @@ type Exits struct {
 	IsTorLookup map[string]bool
 }
 
-func (e *Exits) Dump(ip string, port int) string {
+func (e *Exits) Dump(w io.Writer, ip string, port int) {
 	ap := AddressPort{ip, port}
-	var buf bytes.Buffer
-
 	e.GetAllExits(ap, func(exit string) {
-		buf.WriteString(exit)
-		buf.WriteRune('\n')
+		w.Write([]byte(exit + "\n"))
 	})
-
-	return buf.String()
 }
 
 func (e *Exits) GetAllExits(ap AddressPort, fn func(ip string)) {
@@ -115,21 +109,15 @@ func (e *Exits) IsTor(remoteAddr string) bool {
 	return e.IsTorLookup[remoteAddr]
 }
 
-func (e *Exits) Load() {
-	file, err := os.Open("data/exit-policies")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
+func (e *Exits) Load(source io.Reader) error {
 	exits := make(map[string]Policy)
-	dec := json.NewDecoder(file)
+	dec := json.NewDecoder(source)
 	for {
 		var p Policy
-		if err = dec.Decode(&p); err == io.EOF {
+		if err := dec.Decode(&p); err == io.EOF {
 			break
 		} else if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		for i := range p.Rules {
 			r := &p.Rules[i]
@@ -152,6 +140,19 @@ func (e *Exits) Load() {
 
 	// precompute IsTor
 	e.PreComputeTorList()
+
+	return nil
+}
+
+func (e *Exits) LoadFromFile() {
+	file, err := os.Open(os.ExpandEnv("${TORCHECKBASE}data/exit-policies"))
+	defer file.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = e.Load(file); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (e *Exits) Run() {
@@ -160,9 +161,9 @@ func (e *Exits) Run() {
 	go func() {
 		for {
 			<-e.ReloadChan
-			e.Load()
+			e.LoadFromFile()
 			log.Println("Exit list reloaded.")
 		}
 	}()
-	e.Load()
+	e.LoadFromFile()
 }

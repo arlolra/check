@@ -1,6 +1,7 @@
 SHELL := /bin/bash
 
 export GOPATH := $(CURDIR):$(GOPATH)
+export TORCHECKBASE := $(CURDIR)/
 
 start: data/exit-policies data/langs
 	@./check
@@ -42,6 +43,21 @@ build:
 	go fmt
 	go build
 
+# Add -i for installing latest version, -v for verbose
+test: build
+	go test check -v -run "$(filter)"
+
+cover: build
+	go test check -coverprofile cover.out
+
+filter?=.
+bench: build
+	go test check -i
+	go test check -benchtime 10s -bench "$(filter)" -benchmem
+
+profile: build
+	go test check -cpuprofile ../../cpu.prof -memprofile ../../mem.prof -benchtime 40s -bench "$(filter)"
+
 i18n:
 	rm -rf locale
 	git clone -b torcheck https://git.torproject.org/translation.git locale
@@ -55,4 +71,4 @@ i18n:
 		fi \
 	done
 
-.PHONY: start build i18n
+.PHONY: start build i18n test bench cover profile

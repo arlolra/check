@@ -118,7 +118,7 @@ func GetLocaleList() map[string]string {
 }
 
 func FetchTranslationLocales() (map[string]locale, error) {
-	file, err := os.Open("data/langs")
+	file, err := os.Open(os.ExpandEnv("${TORCHECKBASE}data/langs"))
 	if err != nil {
 		return nil, err
 	}
@@ -146,9 +146,11 @@ func FetchTranslationLocales() (map[string]locale, error) {
 
 // Get a list of all languages installed in our locale folder with translations if available
 func GetInstalledLocales(webLocales map[string]locale, nameTranslations map[string]string) map[string]string {
-	localFiles, err := ioutil.ReadDir("locale")
+	localFiles, err := ioutil.ReadDir(os.ExpandEnv("${TORCHECKBASE}locale"))
+
 	if err != nil {
-		log.Fatal("No locales found in './locale'. Try running 'make i18n'.")
+		log.Print("No locales found in 'locale'. Try running 'make i18n'.")
+		log.Fatal(err)
 	}
 
 	locales := make(map[string]string, len(localFiles))

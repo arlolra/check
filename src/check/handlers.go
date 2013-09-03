@@ -121,9 +121,9 @@ func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWrit
 		str := fmt.Sprintf("# This is a list of all Tor exit nodes that can contact %s on Port %d #\n", ip, port)
 		str += fmt.Sprintf("# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%s #\n", ip, port_str)
 		str += fmt.Sprintf("# This file was generated on %v #\n", Exits.UpdateTime.UTC().Format(time.UnixDate))
-		str += Exits.Dump(ip, port)
 		fmt.Fprintf(w, str)
 
+		Exits.Dump(w, ip, port)
 	}
 
 }
