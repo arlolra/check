@@ -109,18 +109,12 @@ func (e *Exits) IsTor(remoteAddr string) bool {
 	return e.IsTorLookup[remoteAddr]
 }
 
-func (e *Exits) Load() {
-	file, err := os.Open("data/exit-policies")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
+func (e *Exits) Load(source io.Reader) {
 	exits := make(map[string]Policy)
-	dec := json.NewDecoder(file)
+	dec := json.NewDecoder(source)
 	for {
 		var p Policy
-		if err = dec.Decode(&p); err == io.EOF {
+		if err := dec.Decode(&p); err == io.EOF {
 			break
 		} else if err != nil {
 			log.Fatal(err)
@@ -140,15 +134,27 @@ func (e *Exits) Load() {
 	e.PreComputeTorList()
 }
 
+// Helper to ease testing for Load
+func (e *Exits) loadFromFile() {
+	file, err := os.Open("data/exit-policies")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	e.Load(file)
+
+	defer file.Close()
+}
+
 func (e *Exits) Run() {
 	e.ReloadChan = make(chan os.Signal, 1)
 	signal.Notify(e.ReloadChan, syscall.SIGUSR2)
 	go func() {
 		for {
 			<-e.ReloadChan
-			e.Load()
+			e.loadFromFile()
 			log.Println("Exit list reloaded.")
 		}
 	}()
-	e.Load()
+	e.loadFromFile()
 }
