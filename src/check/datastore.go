@@ -1,8 +1,8 @@
 package check
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -25,15 +25,11 @@ func ValidPort(port int) bool {
 	return port >= 0 && port < 65536
 }
 
-func (r Rule) IsMatch(ap AddressPort) bool {
-	address := net.ParseIP(ap.Address)
-	if address == nil {
-		return false
-	}
+func (r Rule) IsMatch(address net.IP, port int) bool {
 	if r.AddressIP != nil && !r.AddressIP.Equal(address) {
 		return false
 	}
-	if !ValidPort(ap.Port) || ap.Port < r.MinPort || ap.Port > r.MaxPort {
+	if port < r.MinPort || port > r.MaxPort {
 		return false
 	}
 	return true
@@ -51,46 +47,59 @@ type Policy struct {
 	CanExitCache     map[AddressPort]bool
 }
 
-func (p Policy) CanExit(ap AddressPort) bool {
-	can, ok := p.CanExitCache[ap]
-	if !ok {
-		can = p.IsAllowedDefault
+func (p Policy) CanExit(ap AddressPort) (can bool) {
+	if can, ok := p.CanExitCache[ap]; ok {
+		return can // Explicit return for shadowed var
+	}
+	// Update the cache *after* we return
+	defer func() { p.CanExitCache[ap] = can }()
+
+	addr := net.ParseIP(ap.Address)
+	if addr != nil && ValidPort(ap.Port) {
 		for _, rule := range p.Rules {
-			if rule.IsMatch(ap) {
+			if rule.IsMatch(addr, ap.Port) {
 				can = rule.IsAccept
-				break
+				return
 			}
 		}
-		p.CanExitCache[ap] = can
 	}
-	return can
+
+	can = p.IsAllowedDefault
+	return
 }
 
 type Exits struct {
-	List       map[string]Policy
-	UpdateTime time.Time
-	ReloadChan chan os.Signal
+	List        map[string]Policy
+	UpdateTime  time.Time
+	ReloadChan  chan os.Signal
+	isTorLookup map[string]bool
 }
 
 func (e *Exits) Dump(ip string, port int) string {
+	// This should cause less GC
+	var buf bytes.Buffer
+
+	e.getAllExits(ip, port, func(can_exit_ip string) {
+		buf.WriteString(can_exit_ip)
+		buf.WriteRune('\n')
+	})
+
+	return buf.String()
+}
+
+func (e *Exits) getAllExits(ip string, port int, fn func(ip string)) {
 	ap := AddressPort{ip, port}
-	var str string
 	for key, val := range e.List {
 		if val.CanExit(ap) {
-			str += fmt.Sprintf("%s\n", key)
+			fn(key)
 		}
 	}
-	return str
 }
 
 var DefaultTarget = AddressPort{"38.229.70.31", 443}
 
 func (e *Exits) IsTor(remoteAddr string) bool {
-	policy, ok := e.List[remoteAddr]
-	if ok {
-		return policy.CanExit(DefaultTarget)
-	}
-	return false
+	return e.isTorLookup[remoteAddr]
 }
 
 func (e *Exits) Load() {
@@ -119,6 +128,18 @@ func (e *Exits) Load() {
 	// swap in exits
 	e.List = exits
 	e.UpdateTime = time.Now()
+
+	// Precompute after the new list is swapped
+	e.preComputeTorList()
+}
+
+func (e *Exits) preComputeTorList() {
+	newmap := make(map[string]bool)
+	e.getAllExits(DefaultTarget.Address, DefaultTarget.Port, func(ip string) {
+		newmap[ip] = true
+	})
+
+	e.isTorLookup = newmap
 }
 
 func (e *Exits) Run() {
