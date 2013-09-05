@@ -25,15 +25,11 @@ func ValidPort(port int) bool {
 	return port >= 0 && port < 65536
 }
 
-func (r Rule) IsMatch(ap AddressPort) bool {
-	address := net.ParseIP(ap.Address)
-	if address == nil {
-		return false
-	}
+func (r Rule) IsMatch(address net.IP, port int) bool {
 	if r.AddressIP != nil && !r.AddressIP.Equal(address) {
 		return false
 	}
-	if !ValidPort(ap.Port) || ap.Port < r.MinPort || ap.Port > r.MaxPort {
+	if port < r.MinPort || port > r.MaxPort {
 		return false
 	}
 	return true
@@ -51,19 +47,25 @@ type Policy struct {
 	CanExitCache     map[AddressPort]bool
 }
 
-func (p Policy) CanExit(ap AddressPort) bool {
-	can, ok := p.CanExitCache[ap]
-	if !ok {
-		can = p.IsAllowedDefault
+func (p Policy) CanExit(ap AddressPort) (can bool) {
+	if can, ok := p.CanExitCache[ap]; ok {
+		return can // Explicit return for shadowed var
+	}
+	// Update the cache *after* we return
+	defer func() { p.CanExitCache[ap] = can }()
+
+	addr := net.ParseIP(ap.Address)
+	if addr != nil && ValidPort(ap.Port) {
 		for _, rule := range p.Rules {
-			if rule.IsMatch(ap) {
+			if rule.IsMatch(addr, ap.Port) {
 				can = rule.IsAccept
-				break
+				return
 			}
 		}
-		p.CanExitCache[ap] = can
 	}
-	return can
+
+	can = p.IsAllowedDefault
+	return
 }
 
 type Exits struct {
