@@ -1,8 +1,8 @@
 package check
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -67,30 +67,37 @@ func (p Policy) CanExit(ap AddressPort) bool {
 }
 
 type Exits struct {
-	List       map[string]Policy
-	UpdateTime time.Time
-	ReloadChan chan os.Signal
+	List        map[string]Policy
+	UpdateTime  time.Time
+	ReloadChan  chan os.Signal
+	isTorLookup map[string]bool
 }
 
 func (e *Exits) Dump(ip string, port int) string {
+	// This should cause less GC
+	var buf bytes.Buffer
+
+	e.getAllExits(ip, port, func(can_exit_ip string) {
+		buf.WriteString(can_exit_ip)
+		buf.WriteRune('\n')
+	})
+
+	return buf.String()
+}
+
+func (e *Exits) getAllExits(ip string, port int, fn func(ip string)) {
 	ap := AddressPort{ip, port}
-	var str string
 	for key, val := range e.List {
 		if val.CanExit(ap) {
-			str += fmt.Sprintf("%s\n", key)
+			fn(key)
 		}
 	}
-	return str
 }
 
 var DefaultTarget = AddressPort{"38.229.70.31", 443}
 
 func (e *Exits) IsTor(remoteAddr string) bool {
-	policy, ok := e.List[remoteAddr]
-	if ok {
-		return policy.CanExit(DefaultTarget)
-	}
-	return false
+	return e.isTorLookup[remoteAddr]
 }
 
 func (e *Exits) Load() {
@@ -119,6 +126,18 @@ func (e *Exits) Load() {
 	// swap in exits
 	e.List = exits
 	e.UpdateTime = time.Now()
+
+	// Precompute after the new list is swapped
+	e.preComputeTorList()
+}
+
+func (e *Exits) preComputeTorList() {
+	newmap := make(map[string]bool)
+	e.getAllExits(DefaultTarget.Address, DefaultTarget.Port, func(ip string) {
+		newmap[ip] = true
+	})
+
+	e.isTorLookup = newmap
 }
 
 func (e *Exits) Run() {
