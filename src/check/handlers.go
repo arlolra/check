@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-var Locales = GetLocaleList()
-
 // page model
 type Page struct {
 	IsTor    bool

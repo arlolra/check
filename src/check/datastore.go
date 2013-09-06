@@ -136,14 +136,14 @@ func (e *Exits) Load(source io.Reader) {
 
 // Helper to ease testing for Load
 func (e *Exits) loadFromFile() {
-	file, err := os.Open("data/exit-policies")
+	file, err := os.Open(os.ExpandEnv("${TORCHECKBASE}data/exit-policies"))
+	defer file.Close()
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	e.Load(file)
-
-	defer file.Close()
 }
 
 func (e *Exits) Run() {
