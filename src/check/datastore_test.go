@@ -1,6 +1,8 @@
 package check
 
 import (
+	intstab "github.com/Ryman/intstab"
+	"net"
 	"strings"
 	"testing"
 )
@@ -95,11 +97,54 @@ func TestExitListLoading(t *testing.T) {
 	checkDump(t, addressDump, "91.121.43.80", "83.227.52.198")
 }
 
+func BenchmarkDumpStabList(b *testing.B) {
+	/*
+	* TODO: Change dir structure to not need this hack
+	* 		This fixes file loading since the tests start in a nested dir
+	 */
+	e := new(Exits)
+	e.loadFromFile()
+
+	ils := make([]*intstab.Interval, 0, 1000)
+
+	for _, policy := range e.List {
+		for _, rule := range policy.Rules {
+			ils = append(ils, &intstab.Interval{
+				uint16(rule.MinPort),
+				uint16(rule.MaxPort),
+				rule})
+		}
+	}
+
+	intStab, err := intstab.NewIntervalStabber(ils)
+	if err != nil {
+		b.Fatal("Unable to get IntervalStabber: ", err)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		count := 0
+		results, _ := intStab.Intersect(uint16(DefaultTarget.Port))
+		address := net.ParseIP(DefaultTarget.Address)
+		// Assume port is always valid, otherwise it's just an early return
+
+		for _, val := range results {
+			rule := val.Tag.(Rule)
+
+			if (rule.AddressIP == nil || rule.AddressIP.Equal(address)) || rule.IsAccept {
+				count++
+			}
+		}
+	}
+}
+
 func BenchmarkDumpList(b *testing.B) {
 	/*
 	* TODO: Change dir structure to not need this hack
 	* 		This fixes file loading since the tests start in a nested dir
 	 */
+
+	//b.Skip()
 	e := new(Exits)
 	e.loadFromFile()
 

@@ -46,8 +46,15 @@ build:
 test: build
 	go test check
 
+cover: build
+	go test check -coverprofile cover.out
+
+filter?=.
 bench: build
-	go test check -benchtime 5s -bench .
+	go test check -benchtime 10s -bench "$(filter)"
+
+profile: build
+	go test check -cpuprofile ../../cpu.prof -memprofile ../../mem.prof -benchtime 40s -bench "$(filter)"
 
 i18n:
 	rm -rf locale
@@ -62,4 +69,4 @@ i18n:
 		fi \
 	done
 
-.PHONY: start build i18n test
+.PHONY: start build i18n test bench coverage profile
