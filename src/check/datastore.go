@@ -95,11 +95,11 @@ func (e *Exits) GetAllExits(ap AddressPort, fn func(ip string)) {
 	}
 }
 
-func (e *Exits) PreComputeTorList() {
-	target := AddressPort{"38.229.70.31", 443}
-	newmap := make(map[string]bool)
+var DefaultTarget = AddressPort{"38.229.70.31", 443}
 
-	e.GetAllExits(target, func(ip string) {
+func (e *Exits) PreComputeTorList() {
+	newmap := make(map[string]bool)
+	e.GetAllExits(DefaultTarget, func(ip string) {
 		newmap[ip] = true
 	})
 	e.IsTorLookup = newmap
