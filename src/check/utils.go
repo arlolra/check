@@ -122,8 +122,14 @@ func GetLocaleList() map[string]string {
 	return GetInstalledLocales(webLocales, haveTranslatedNames)
 }
 
+<<<<<<< HEAD
 func FetchTranslationLocales() (map[string]locale, error) {
 	file, err := os.Open("data/langs")
+=======
+func fetchTranslationLocales() (map[string]locale, error) {
+	// Todo: Make this cached (Sucks for test times when having patchy 3g)
+	resp, err := http.Get("https://www.transifex.com/api/2/languages/")
+>>>>>>> Implemented api with interval tree, ~100x perf
 	if err != nil {
 		return nil, err
 	}

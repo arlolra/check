@@ -3,36 +3,33 @@ package check
 import (
 	"bytes"
 	"encoding/json"
+	_ "fmt"
+	"github.com/Ryman/intstab"
 	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
 
 // stem's ExitPolicyRule class, sort of
 type Rule struct {
-	IsAccept  bool
-	Address   string
-	AddressIP net.IP
-	MinPort   int
-	MaxPort   int
+	IsAccept      bool
+	Address       string
+	AddressIP     net.IP
+	MinPort       int
+	MaxPort       int
+	PolicyAddress string
+	// Optimisation:
+	// Reduced allocs from appending \n to each line in dumps
+	PolicyAddressNewLine []byte
 }
 
 func ValidPort(port int) bool {
 	return port >= 0 && port < 65536
-}
-
-func (r Rule) IsMatch(address net.IP, port int) bool {
-	if r.AddressIP != nil && !r.AddressIP.Equal(address) {
-		return false
-	}
-	if port < r.MinPort || port > r.MaxPort {
-		return false
-	}
-	return true
 }
 
 type AddressPort struct {
@@ -44,53 +41,50 @@ type Policy struct {
 	Address          string
 	Rules            []Rule
 	IsAllowedDefault bool
-	CanExitCache     map[AddressPort]bool
 }
 
-func (p Policy) CanExit(ap AddressPort) (can bool) {
-	if can, ok := p.CanExitCache[ap]; ok {
-		return can // explicit return for shadowed var
-	}
-	// update the cache after we return
-	defer func() { p.CanExitCache[ap] = can }()
-
-	addr := net.ParseIP(ap.Address)
-	if addr != nil && ValidPort(ap.Port) {
-		for _, rule := range p.Rules {
-			if rule.IsMatch(addr, ap.Port) {
-				can = rule.IsAccept
-				return
-			}
-		}
-	}
-
-	can = p.IsAllowedDefault
-	return
+func (r *Rule) IsAllowed(ip net.IP) bool {
+	return r.IsAccept && (r.AddressIP == nil || r.AddressIP.Equal(ip))
 }
+
+// func (p Policy) CanExit(ap AddressPort) bool {
+// 	can, ok := p.CanExitCache[ap]
+// 	if !ok {
+// 		can = p.IsAllowedDefault
+// 		for _, rule := range p.Rules {
+// 			if rule.IsMatch(ap) {
+// 				can = rule.IsAccept
+// 				break
+// 			}
+// 		}
+// 		p.CanExitCache[ap] = can
+// 	}
+// 	return can
+// }
 
 type Exits struct {
-	List        map[string]Policy
-	UpdateTime  time.Time
-	ReloadChan  chan os.Signal
-	IsTorLookup map[string]bool
+	List       intstab.IntervalStabber
+	UpdateTime time.Time
+	ReloadChan chan os.Signal
+	torIPs     map[string]bool
 }
 
-func (e *Exits) Dump(ip string, port int) string {
-	ap := AddressPort{ip, port}
-	var buf bytes.Buffer
+func (e *Exits) Dump(w io.Writer, ip string, port int) {
+	address := net.ParseIP(ip)
+	if address == nil || !ValidPort(port) {
+		return // TODO: Return error
+	}
 
-	e.GetAllExits(ap, func(exit string) {
-		buf.WriteString(exit)
-		buf.WriteRune('\n')
-	})
+	rules, err := e.List.Intersect(uint16(port))
+	if err != nil {
+		return // TODO: Return error
+	}
 
-	return buf.String()
-}
-
-func (e *Exits) GetAllExits(ap AddressPort, fn func(ip string)) {
-	for key, val := range e.List {
-		if val.CanExit(ap) {
-			fn(key)
+	// TODO: exclude ips that were already included
+	for _, i := range rules {
+		// TODO: Remove this type assertion? Seems to be triggering memmoves
+		if r := i.Tag.(Rule); r.IsAllowed(address) {
+			w.Write(r.PolicyAddressNewLine)
 		}
 	}
 }
@@ -106,11 +100,13 @@ func (e *Exits) PreComputeTorList() {
 }
 
 func (e *Exits) IsTor(remoteAddr string) bool {
-	return e.IsTorLookup[remoteAddr]
+	return e.torIPs[remoteAddr]
 }
 
-func (e *Exits) Load(source io.Reader) {
-	exits := make(map[string]Policy)
+func (e *Exits) Load(source io.Reader) error {
+	e.torIPs = make(map[string]bool)
+	intervals := make(intstab.IntervalSlice, 0, 30000)
+
 	dec := json.NewDecoder(source)
 	for {
 		var p Policy
@@ -119,19 +115,40 @@ func (e *Exits) Load(source io.Reader) {
 		} else if err != nil {
 			log.Fatal(err)
 		}
+
+		// TODO: Turn !IsAccept rules into partitions if
+		// the policy's acceptdefault is true
+		// BUG: if acceptdefault is true, but they have
+		// blocked port 80, then we need to have a range
+		// 1-79 and 81-65535
+		// Add tests for this
 		for _, r := range p.Rules {
 			r.AddressIP = net.ParseIP(r.Address)
+			r.PolicyAddress = p.Address
+			r.PolicyAddressNewLine = []byte(p.Address + "\n")
+			tag := &intstab.Interval{uint16(r.MinPort), uint16(r.MaxPort), r}
+			intervals = append(intervals, tag)
 		}
-		p.CanExitCache = make(map[AddressPort]bool)
-		exits[p.Address] = p
 	}
 
-	// swap in exits
-	e.List = exits
-	e.UpdateTime = time.Now()
+	// swap in exits if no errors
+	if list, err := intstab.NewIntervalStabber(intervals); err != nil {
+		log.Print("Failed to create new IntervalStabber: ", err)
+		return err
+	} else {
+		e.List = list
+		buf := new(bytes.Buffer)
+		e.Dump(buf, DefaultTarget.Address, DefaultTarget.Port)
+		strIPs := strings.Split(buf.String(), "\n")
 
-	// precompute IsTor
-	e.PreComputeTorList()
+		for _, s := range strIPs {
+			s = strings.Trim(s, " ")
+			e.torIPs[s] = (s != "")
+		}
+	}
+
+	e.UpdateTime = time.Now()
+	return nil
 }
 
 // Helper to ease testing for Load

@@ -43,15 +43,17 @@ build:
 	go fmt
 	go build
 
+# Add -i for installing latest version, -v for verbose
 test: build
-	go test check
+	go test check -v
 
 cover: build
 	go test check -coverprofile cover.out
 
 filter?=.
 bench: build
-	go test check -benchtime 10s -bench "$(filter)"
+	go test check -i 
+	go test check -benchtime 10s -bench "$(filter)" -benchmem
 
 profile: build
 	go test check -cpuprofile ../../cpu.prof -memprofile ../../mem.prof -benchtime 40s -bench "$(filter)"
