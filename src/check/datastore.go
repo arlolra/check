@@ -49,9 +49,9 @@ type Policy struct {
 
 func (p Policy) CanExit(ap AddressPort) (can bool) {
 	if can, ok := p.CanExitCache[ap]; ok {
-		return can // Explicit return for shadowed var
+		return can // explicit return for shadowed var
 	}
-	// Update the cache *after* we return
+	// update the cache after we return
 	defer func() { p.CanExitCache[ap] = can }()
 
 	addr := net.ParseIP(ap.Address)
@@ -72,23 +72,22 @@ type Exits struct {
 	List        map[string]Policy
 	UpdateTime  time.Time
 	ReloadChan  chan os.Signal
-	isTorLookup map[string]bool
+	IsTorLookup map[string]bool
 }
 
 func (e *Exits) Dump(ip string, port int) string {
-	// This should cause less GC
+	ap := AddressPort{ip, port}
 	var buf bytes.Buffer
 
-	e.getAllExits(ip, port, func(can_exit_ip string) {
-		buf.WriteString(can_exit_ip)
+	e.GetAllExits(ap, func(exit string) {
+		buf.WriteString(exit)
 		buf.WriteRune('\n')
 	})
 
 	return buf.String()
 }
 
-func (e *Exits) getAllExits(ip string, port int, fn func(ip string)) {
-	ap := AddressPort{ip, port}
+func (e *Exits) GetAllExits(ap AddressPort, fn func(ip string)) {
 	for key, val := range e.List {
 		if val.CanExit(ap) {
 			fn(key)
@@ -96,10 +95,18 @@ func (e *Exits) getAllExits(ip string, port int, fn func(ip string)) {
 	}
 }
 
-var DefaultTarget = AddressPort{"38.229.70.31", 443}
+func (e *Exits) PreComputeTorList() {
+	target := AddressPort{"38.229.70.31", 443}
+	newmap := make(map[string]bool)
+
+	e.GetAllExits(target, func(ip string) {
+		newmap[ip] = true
+	})
+	e.IsTorLookup = newmap
+}
 
 func (e *Exits) IsTor(remoteAddr string) bool {
-	return e.isTorLookup[remoteAddr]
+	return e.IsTorLookup[remoteAddr]
 }
 
 func (e *Exits) Load() {
@@ -129,17 +136,8 @@ func (e *Exits) Load() {
 	e.List = exits
 	e.UpdateTime = time.Now()
 
-	// Precompute after the new list is swapped
-	e.preComputeTorList()
-}
-
-func (e *Exits) preComputeTorList() {
-	newmap := make(map[string]bool)
-	e.getAllExits(DefaultTarget.Address, DefaultTarget.Port, func(ip string) {
-		newmap[ip] = true
-	})
-
-	e.isTorLookup = newmap
+	// precompute IsTor
+	e.PreComputeTorList()
 }
 
 func (e *Exits) Run() {

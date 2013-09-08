@@ -9,10 +9,7 @@ import (
 	"time"
 )
 
-var (
-	// locales map
-	Locales = getLocaleList()
-)
+var Locales = GetLocaleList()
 
 // page model
 type Page struct {

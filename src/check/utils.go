@@ -72,12 +72,9 @@ func CompileTemplate(domain *gettext.Domain, templateName string) *template.Temp
 type locale struct {
 	Code string
 	Name string
-	// Unnecessary fields
-	//PluralEquation string
-	//NumPlurals     float64 `json:"nplurals"`
 }
 
-func getLocaleList() map[string]string {
+func GetLocaleList() map[string]string {
 	// TODO: This should be it's own translation file
 	haveTranslatedNames := map[string]string{
 		"ar":    "&#1593;&#1585;&#1576;&#1610;&#1577;&nbsp;(Arabiya)",
@@ -110,16 +107,16 @@ func getLocaleList() map[string]string {
 
 	// for all folders in locale which match a locale from https://www.transifex.com/api/2/languages/
 	// use the language name unless we have an override
-	webLocales, err := fetchTranslationLocales()
+	webLocales, err := FetchTranslationLocales()
 	if err != nil {
 		log.Printf("Failed to get up to date language list, using fallback.")
 		return haveTranslatedNames
 	}
 
-	return getInstalledLocales(webLocales, haveTranslatedNames)
+	return GetInstalledLocales(webLocales, haveTranslatedNames)
 }
 
-func fetchTranslationLocales() (map[string]locale, error) {
+func FetchTranslationLocales() (map[string]locale, error) {
 	resp, err := http.Get("https://www.transifex.com/api/2/languages/")
 	if err != nil {
 		return nil, err
@@ -146,7 +143,7 @@ func fetchTranslationLocales() (map[string]locale, error) {
 }
 
 // Get a list of all languages installed in our locale folder with translations if available
-func getInstalledLocales(webLocales map[string]locale, nameTranslations map[string]string) map[string]string {
+func GetInstalledLocales(webLocales map[string]locale, nameTranslations map[string]string) map[string]string {
 	localFiles, err := ioutil.ReadDir("locale")
 	if err != nil {
 		log.Fatal("No locales found in './locale'. Try running 'make i18n'.")
