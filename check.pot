@@ -1,0 +1,53 @@
+# TorCheck gettext template
+# Copyright (C) 2008-2012 The Tor Project, Inc
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: TorCheck\n"
+"POT-Creation-Date: 2012-02-16 20:28+PDT\n"
+"PO-Revision-Date: 2012-02-16 21:20+CET\n"
+"Last-Translator: Appelbaum <jacob@appelbaum.net>\n"
+"Language-Team: Tor Translation <tor-translation@torproject.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+msgid "Congratulations. Your browser is configured to use Tor."
+msgstr ""
+
+msgid ""
+"Please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> "
+"for further information about using Tor safely.  You are now free to browse "
+"the Internet anonymously."
+msgstr ""
+
+msgid "There is a security update available for the Tor Browser Bundle."
+msgstr ""
+
+msgid ""
+"<a href=\"https://www.torproject.org/download/download-easy.html\">Click "
+"here to go to the download page</a>"
+msgstr ""
+
+msgid "Sorry. You are not using Tor."
+msgstr ""
+
+msgid ""
+"If you are attempting to use a Tor client, please refer to the <a href="
+"\"https://www.torproject.org/\">Tor website</a> and specifically the <a href="
+"\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for "
+"configuring your Tor client</a>."
+msgstr ""
+
+msgid "Sorry, your query failed or an unexpected response was received."
+msgstr ""
+
+msgid ""
+"A temporary service outage prevents us from determining if your source IP "
+"address is a <a href=\"https://www.torproject.org/\">Tor</a> node."
+msgstr ""
+
+msgid "Your IP address appears to be: "
+msgstr ""
+
