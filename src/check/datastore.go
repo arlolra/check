@@ -91,12 +91,20 @@ func (e *Exits) Dump(w io.Writer, ip string, port int) {
 
 var DefaultTarget = AddressPort{"38.229.70.31", 443}
 
+// This is pretty wastefully implemented, but it's run once per hour
+// so it's not a big deal unless it leaks its memory. Check for that!
 func (e *Exits) PreComputeTorList() {
-	newmap := make(map[string]bool)
-	e.GetAllExits(DefaultTarget, func(ip string) {
-		newmap[ip] = true
-	})
-	e.IsTorLookup = newmap
+	newmap := make(map[string]bool, len(e.torIPs))
+	buf := new(bytes.Buffer)
+	e.Dump(buf, DefaultTarget.Address, DefaultTarget.Port)
+	strIPs := strings.Split(buf.String(), "\n")
+
+	for _, s := range strIPs {
+		s = strings.Trim(s, " ")
+		newmap[s] = (s != "")
+	}
+
+	e.torIPs = newmap
 }
 
 func (e *Exits) IsTor(remoteAddr string) bool {
@@ -137,14 +145,7 @@ func (e *Exits) Load(source io.Reader) error {
 		return err
 	} else {
 		e.List = list
-		buf := new(bytes.Buffer)
-		e.Dump(buf, DefaultTarget.Address, DefaultTarget.Port)
-		strIPs := strings.Split(buf.String(), "\n")
-
-		for _, s := range strIPs {
-			s = strings.Trim(s, " ")
-			e.torIPs[s] = (s != "")
-		}
+		e.PreComputeTorList()
 	}
 
 	e.UpdateTime = time.Now()

@@ -13,7 +13,7 @@ import (
 
 var (
 	// locales map
-	Locales = getLocaleList()
+	Locales = GetLocaleList()
 )
 
 func UpToDate(r *http.Request) bool {
@@ -122,14 +122,8 @@ func GetLocaleList() map[string]string {
 	return GetInstalledLocales(webLocales, haveTranslatedNames)
 }
 
-<<<<<<< HEAD
 func FetchTranslationLocales() (map[string]locale, error) {
-	file, err := os.Open("data/langs")
-=======
-func fetchTranslationLocales() (map[string]locale, error) {
-	// Todo: Make this cached (Sucks for test times when having patchy 3g)
-	resp, err := http.Get("https://www.transifex.com/api/2/languages/")
->>>>>>> Implemented api with interval tree, ~100x perf
+	file, err := os.Open(os.ExpandEnv("${TORCHECKBASE}data/langs"))
 	if err != nil {
 		return nil, err
 	}
@@ -156,13 +150,9 @@ func fetchTranslationLocales() (map[string]locale, error) {
 }
 
 // Get a list of all languages installed in our locale folder with translations if available
-<<<<<<< HEAD
 func GetInstalledLocales(webLocales map[string]locale, nameTranslations map[string]string) map[string]string {
-	localFiles, err := ioutil.ReadDir("locale")
-=======
-func getInstalledLocales(webLocales map[string]locale, nameTranslations map[string]string) map[string]string {
 	localFiles, err := ioutil.ReadDir(os.ExpandEnv("${TORCHECKBASE}locale"))
->>>>>>> Refactored tests, fixed filepaths for testing, added basic benchmark
+
 	if err != nil {
 		log.Print("No locales found in 'locale'. Try running 'make i18n'.")
 		log.Fatal(err)
