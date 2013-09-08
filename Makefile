@@ -45,7 +45,7 @@ build:
 
 # Add -i for installing latest version, -v for verbose
 test: build
-	go test check -v
+	go test check -v -run "$(filter)"
 
 cover: build
 	go test check -coverprofile cover.out
