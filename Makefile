@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 export GOPATH := $(CURDIR):$(GOPATH)
 
-start: data/exit-policies
+start: data/exit-policies data/langs
 	@./check
 
 # Get any data files we're missing
@@ -33,6 +33,9 @@ data/exit-policies: data/consensus public/exit-addresses
 	@echo Generating exit-policies file
 	@python scripts/exitips.py
 	@echo Done
+
+data/langs: data/
+	curl https://www.transifex.com/api/2/languages/ > data/langs
 
 build:
 	go fmt ./src/check

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 func UpToDate(r *http.Request) bool {
@@ -117,14 +118,15 @@ func GetLocaleList() map[string]string {
 }
 
 func FetchTranslationLocales() (map[string]locale, error) {
-	resp, err := http.Get("https://www.transifex.com/api/2/languages/")
+	file, err := os.Open("data/langs")
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	webLocales := make(map[string]locale)
 	// Parse the api response into a list of possible locales
-	dec := json.NewDecoder(resp.Body)
+	dec := json.NewDecoder(file)
 	for {
 		var webList []locale
 		if err = dec.Decode(&webList); err == io.EOF {
