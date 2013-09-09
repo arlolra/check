@@ -15,19 +15,6 @@ import (
 	"time"
 )
 
-// stem's ExitPolicyRule class, sort of
-type Rule struct {
-	IsAccept      bool
-	Address       string
-	AddressIP     net.IP
-	MinPort       int
-	MaxPort       int
-	PolicyAddress string
-	// Optimisation:
-	// Reduced allocs from appending \n to each line in dumps
-	PolicyAddressNewLine []byte
-}
-
 func ValidPort(port int) bool {
 	return port >= 0 && port < 65536
 }
@@ -36,31 +23,6 @@ type AddressPort struct {
 	Address string
 	Port    int
 }
-
-type Policy struct {
-	Address          string
-	Rules            []Rule
-	IsAllowedDefault bool
-}
-
-func (r *Rule) IsAllowed(ip net.IP) bool {
-	return r.IsAccept && (r.AddressIP == nil || r.AddressIP.Equal(ip))
-}
-
-// func (p Policy) CanExit(ap AddressPort) bool {
-// 	can, ok := p.CanExitCache[ap]
-// 	if !ok {
-// 		can = p.IsAllowedDefault
-// 		for _, rule := range p.Rules {
-// 			if rule.IsMatch(ap) {
-// 				can = rule.IsAccept
-// 				break
-// 			}
-// 		}
-// 		p.CanExitCache[ap] = can
-// 	}
-// 	return can
-// }
 
 type Exits struct {
 	List       intstab.IntervalStabber
@@ -83,7 +45,7 @@ func (e *Exits) Dump(w io.Writer, ip string, port int) {
 	// TODO: exclude ips that were already included
 	for _, i := range rules {
 		// TODO: Remove this type assertion? Seems to be triggering memmoves
-		if r := i.Tag.(Rule); r.IsAllowed(address) {
+		if r := i.Tag.(*Rule); r.IsAllowed(address) {
 			w.Write(r.PolicyAddressNewLine)
 		}
 	}
@@ -124,16 +86,7 @@ func (e *Exits) Load(source io.Reader) error {
 			log.Fatal(err)
 		}
 
-		// TODO: Turn !IsAccept rules into partitions if
-		// the policy's acceptdefault is true
-		// BUG: if acceptdefault is true, but they have
-		// blocked port 80, then we need to have a range
-		// 1-79 and 81-65535
-		// Add tests for this
-		for _, r := range p.Rules {
-			r.AddressIP = net.ParseIP(r.Address)
-			r.PolicyAddress = p.Address
-			r.PolicyAddressNewLine = []byte(p.Address + "\n")
+		for r := range p.IterateProcessedRules() {
 			tag := &intstab.Interval{uint16(r.MinPort), uint16(r.MaxPort), r}
 			intervals = append(intervals, tag)
 		}
