@@ -12,10 +12,9 @@ import (
 	"time"
 )
 
-// stem's ExitPolicyRule class, sort of
 type Rule struct {
 	IsAccept          bool
-	IsWildcardAddress bool
+	IsAddressWildcard bool
 	Address           string
 	Mask              string
 	IP                net.IP
@@ -24,12 +23,8 @@ type Rule struct {
 	MaxPort           int
 }
 
-func ValidPort(port int) bool {
-	return port >= 0 && port < 65536
-}
-
 func (r Rule) IsMatch(address net.IP, port int) bool {
-	if !r.IsWildcardAddress {
+	if !r.IsAddressWildcard {
 		if r.IPNet != nil && !r.IPNet.Contains(address) {
 			return false
 		} else if r.IP != nil && !r.IP.Equal(address) {
@@ -40,6 +35,10 @@ func (r Rule) IsMatch(address net.IP, port int) bool {
 		return false
 	}
 	return true
+}
+
+func ValidPort(port int) bool {
+	return port >= 0 && port < 65536
 }
 
 type AddressPort struct {
@@ -132,12 +131,15 @@ func (e *Exits) Load() {
 		} else if err != nil {
 			log.Fatal(err)
 		}
-		for _, r := range p.Rules {
-			r.IP = net.ParseIP(r.Address)
-			if mask := net.ParseIP(r.Mask); r.IP != nil && mask != nil {
-				m := make(net.IPMask, len(mask))
-				copy(m, mask)
-				r.IPNet = &net.IPNet{r.IP.Mask(m), m}
+		for i := range p.Rules {
+			r := &p.Rules[i]
+			if !r.IsAddressWildcard {
+				r.IP = net.ParseIP(r.Address)
+				if mask := net.ParseIP(r.Mask); r.IP != nil && mask != nil {
+					m := make(net.IPMask, len(mask))
+					copy(m, mask)
+					r.IPNet = &net.IPNet{r.IP.Mask(m), m}
+				}
 			}
 		}
 		p.CanExitCache = make(map[AddressPort]bool)
