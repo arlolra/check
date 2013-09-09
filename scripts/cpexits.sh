@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
-cat /srv/tordnsel.torproject.org/state/exit-addresses /srv/tordnsel.torproject.org/state/exit-addresses.new > /home/arlo/git/check/public/exit-addresses
-cp /home/arlo/.tor/cached-consensus /home/arlo/git/check/data/consensus
+HOME=/home/arlo
+GIT=$HOME/git
+CHECK=$GIT/check
+TORDATA=$HOME/.tor
+DNSEL=/srv/tordnsel.torproject.org/state
 
-cd /home/arlo/git/check
-PYTHONPATH=/home/arlo/git/stem scripts/exitips.py
+cat $DNSEL/exit-addresses $DNSEL/exit-addresses.new > $CHECK/public/exit-addresses
+cp $TORDATA/cached-consensus $CHECK/data/consensus
+cat $TORDATA/cached-descriptors $TORDATA/cached-descriptors.new > $CHECK/data/consensus
+
+cd $CHECK
+PYTHONPATH=$GIT/stem scripts/exitips.py
 kill -s SIGUSR2 `cat check.pid`
-

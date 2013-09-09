@@ -14,11 +14,14 @@ import (
 
 // stem's ExitPolicyRule class, sort of
 type Rule struct {
-	IsAccept  bool
-	Address   string
-	AddressIP net.IP
-	MinPort   int
-	MaxPort   int
+	IsAccept          bool
+	IsWildcardAddress bool
+	Address           string
+	Mask              string
+	IP                net.IP
+	IPNet             *net.IPNet
+	MinPort           int
+	MaxPort           int
 }
 
 func ValidPort(port int) bool {
@@ -26,8 +29,12 @@ func ValidPort(port int) bool {
 }
 
 func (r Rule) IsMatch(address net.IP, port int) bool {
-	if r.AddressIP != nil && !r.AddressIP.Equal(address) {
-		return false
+	if !r.IsWildcardAddress {
+		if r.IPNet != nil && !r.IPNet.Contains(address) {
+			return false
+		} else if r.IP != nil && !r.IP.Equal(address) {
+			return false
+		}
 	}
 	if port < r.MinPort || port > r.MaxPort {
 		return false
@@ -126,7 +133,12 @@ func (e *Exits) Load() {
 			log.Fatal(err)
 		}
 		for _, r := range p.Rules {
-			r.AddressIP = net.ParseIP(r.Address)
+			r.IP = net.ParseIP(r.Address)
+			if mask := net.ParseIP(r.Mask); r.IP != nil && mask != nil {
+				m := make(net.IPMask, len(mask))
+				copy(m, mask)
+				r.IPNet = &net.IPNet{r.IP.Mask(m), m}
+			}
 		}
 		p.CanExitCache = make(map[AddressPort]bool)
 		exits[p.Address] = p
