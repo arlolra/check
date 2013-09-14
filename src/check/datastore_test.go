@@ -169,6 +169,24 @@ func TestRejectWithDefaultReject(t *testing.T) {
 	expectDump(t, exits, "222.222.222.111", 81)
 }
 
+func TestMatchedRuleOrdering(t *testing.T) {
+	/* SPEC: These lines describe an "exit policy": the rules that an OR follows
+	   when deciding whether to allow a new stream to a given address. The
+	   'exitpattern' syntax is described below. There MUST be at least one
+	   such entry. The rules are considered in order; if no rule matches,
+	   the address will be accepted. For clarity, the last such entry SHOULD
+	   be accept : or reject :. */
+	testData := `{"Rules": [{"IsAccept": false, "MinPort": 80, "MaxPort": 80, "Address": "222.222.222.222"}, {"IsAccept": true, "MinPort": 80, "MaxPort": 80, "Address": "222.222.222.222"}], "IsAllowedDefault": false, "Address": "111.111.111.111"}`
+	exits := setupExitList(t, testData)
+	// Should match the reject rule first
+	expectDump(t, exits, "222.222.222.222", 80)
+
+	testData = `{"Rules": [{"IsAccept": true, "MinPort": 80, "MaxPort": 80, "Address": "222.222.222.222"}, {"IsAccept": false, "MinPort": 80, "MaxPort": 80, "Address": "222.222.222.222"}], "IsAllowedDefault": false, "Address": "111.111.111.111"}`
+	exits = setupExitList(t, testData)
+	// Should match the accept rule first
+	expectDump(t, exits, "222.222.222.222", 80, "111.111.111.111")
+}
+
 func BenchmarkIsTor(b *testing.B) {
 	e := new(Exits)
 	e.LoadFromFile()
