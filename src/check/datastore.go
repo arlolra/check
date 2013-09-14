@@ -29,28 +29,14 @@ type Exits struct {
 	TorIPs     map[string]bool
 }
 
-type ByOrder struct{ Rules []*intstab.Interval }
-
-func (s ByOrder) Len() int {
-	return len(s.Rules)
-}
-
-func (s ByOrder) Swap(i, j int) {
-	s.Rules[i], s.Rules[j] = s.Rules[j], s.Rules[i]
-}
-
-func (s ByOrder) Less(i, j int) bool {
-	return s.Rules[i].Tag.(*Rule).Order < s.Rules[j].Tag.(*Rule).Order
-}
-
 func (e *Exits) IsAllowed(address net.IP, port int, cb func([]byte)) {
 	rules, err := e.List.Intersect(uint16(port))
 	if err != nil {
 		return // TODO: Return error
 	}
 
-	sort.Sort(ByOrder{rules})
-	matched := make(map[string]bool)
+	sort.Sort(OrderedRuleIntervalSlice(rules))
+	matched := make(map[string]bool, len(rules))
 
 	for _, i := range rules {
 		// TODO: Remove this type assertion? Seems to be triggering memmoves

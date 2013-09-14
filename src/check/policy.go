@@ -1,6 +1,9 @@
 package check
 
-import "net"
+import (
+	"github.com/Ryman/intstab"
+	"net"
+)
 
 type Policy struct {
 	Address          string
@@ -47,6 +50,23 @@ func (r Rule) Finalize(p *Policy) *Rule {
 	r.PolicyAddressNewLine = []byte(p.Address + "\n")
 	return &r
 }
+
+/* sort.Interface requirements for Ordering by Rule.Order */
+type OrderedRuleIntervalSlice []*intstab.Interval
+
+func (s OrderedRuleIntervalSlice) Len() int {
+	return len(s)
+}
+
+func (s OrderedRuleIntervalSlice) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s OrderedRuleIntervalSlice) Less(i, j int) bool {
+	return s[i].Tag.(*Rule).Order < s[j].Tag.(*Rule).Order
+}
+
+/* end sort.Interface */
 
 func (p *Policy) IterateProcessedRules() <-chan *Rule {
 	ch := make(chan *Rule, 1000)
