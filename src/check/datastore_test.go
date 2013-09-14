@@ -26,8 +26,10 @@ func checkDump(t *testing.T, dumpStr string, expected ...string) {
 		dumpStr = dumpStr[0 : i-1]
 	}
 
-	for _, s := range strings.Split(dumpStr, "\n") {
-		found[s] = true
+	if len(dumpStr) > 0 {
+		for _, s := range strings.Split(dumpStr, "\n") {
+			found[s] = true
+		}
 	}
 
 	if l, x := len(found), len(expected); l != x {
@@ -149,6 +151,12 @@ func TestRulesNonWildcard(t *testing.T) {
 
 func TestMaskedIP(t *testing.T) {
 	// TODO
+}
+
+func TestDoubleReject(t *testing.T) {
+	testData := `{"Rules": [{"IsAccept": false, "MinPort": 80, "MaxPort": 80, "Address": "222.222.222.222"}, {"IsAccept": false, "MinPort": 80, "MaxPort": 80, "Address": "123.123.123.123"}], "IsAllowedDefault": true, "Address": "111.111.111.111"}`
+	exits := setupExitList(t, testData)
+	expectDump(t, exits, "222.222.222.222", 80)
 }
 
 func BenchmarkIsTor(b *testing.B) {
