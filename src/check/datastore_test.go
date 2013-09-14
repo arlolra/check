@@ -159,6 +159,16 @@ func TestDoubleReject(t *testing.T) {
 	expectDump(t, exits, "222.222.222.222", 80)
 }
 
+func TestRejectWithDefaultReject(t *testing.T) {
+	testData := `{"Rules": [{"IsAccept": false, "MinPort": 80, "MaxPort": 80, "Address": "222.222.222.222"}, {"IsAccept": true, "MinPort": 80, "MaxPort": 80, "Address": "", "IsAddressWildcard": true}], "IsAllowedDefault": false, "Address": "111.111.111.111"}`
+	exits := setupExitList(t, testData)
+	// Should reject
+	expectDump(t, exits, "222.222.222.222", 80)
+	// Should accept on port 80 only
+	expectDump(t, exits, "222.222.222.111", 80, "111.111.111.111")
+	expectDump(t, exits, "222.222.222.111", 81)
+}
+
 func BenchmarkIsTor(b *testing.B) {
 	e := new(Exits)
 	e.LoadFromFile()

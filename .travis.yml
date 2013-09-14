@@ -5,6 +5,7 @@ go:
 
 install:
   - go get github.com/samuel/go-gettext/gettext
+  - go get github.com/Ryman/intstab
 
 script:
   - make test
