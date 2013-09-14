@@ -43,7 +43,7 @@ func (s ByOrder) Less(i, j int) bool {
 	return s.Rules[i].Tag.(*Rule).Order < s.Rules[j].Tag.(*Rule).Order
 }
 
-func (e *Exits) IsAllowed(address net.IP, port int, cb func(string, []byte)) {
+func (e *Exits) IsAllowed(address net.IP, port int, cb func([]byte)) {
 	rules, err := e.List.Intersect(uint16(port))
 	if err != nil {
 		return // TODO: Return error
@@ -58,7 +58,7 @@ func (e *Exits) IsAllowed(address net.IP, port int, cb func(string, []byte)) {
 			if _, ok := matched[r.PolicyAddress]; !ok {
 				matched[r.PolicyAddress] = true
 				if r.IsAccept {
-					cb(r.PolicyAddress, r.PolicyAddressNewLine)
+					cb(r.PolicyAddressNewLine)
 				}
 			}
 		}
@@ -70,7 +70,7 @@ func (e *Exits) Dump(w io.Writer, ip string, port int) {
 	if address == nil || !ValidPort(port) {
 		return // TODO: Return error
 	}
-	e.IsAllowed(address, port, func(address string, ip []byte) {
+	e.IsAllowed(address, port, func(ip []byte) {
 		w.Write(ip)
 	})
 }
@@ -80,8 +80,8 @@ var DefaultTarget = AddressPort{"38.229.70.31", 443}
 func (e *Exits) PreComputeTorList() {
 	newmap := make(map[string]bool, len(e.TorIPs))
 	addr := net.ParseIP(DefaultTarget.Address)
-	e.IsAllowed(addr, DefaultTarget.Port, func(address string, ip []byte) {
-		newmap[address] = true
+	e.IsAllowed(addr, DefaultTarget.Port, func(ip []byte) {
+		newmap[string(ip[:len(ip)-1])] = true
 	})
 	e.TorIPs = newmap
 }
