@@ -41,10 +41,10 @@ func (e *Exits) IsAllowed(address net.IP, port int, cb func([]byte)) {
 	for _, i := range rules {
 		// TODO: Remove this type assertion? Seems to be triggering memmoves
 		if r := i.Tag.(*Rule); r.IsMatch(address) {
-			if _, ok := matched[r.PolicyAddress]; !ok {
-				matched[r.PolicyAddress] = true
+			if _, ok := matched[r.ParentPolicy.Address]; !ok {
+				matched[r.ParentPolicy.Address] = true
 				if r.IsAccept {
-					cb(r.PolicyAddressNewLine)
+					cb(r.ParentPolicy.AddressNewLine)
 				}
 			}
 		}
@@ -88,6 +88,8 @@ func (e *Exits) Load(source io.Reader) error {
 		} else if err != nil {
 			return err
 		}
+
+		p.AddressNewLine = []byte(p.Address + "\n")
 		for r := range p.IterateProcessedRules() {
 			tag := &intstab.Interval{uint16(r.MinPort), uint16(r.MaxPort), r}
 			intervals = append(intervals, tag)

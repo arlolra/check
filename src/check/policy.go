@@ -7,22 +7,22 @@ import (
 
 type Policy struct {
 	Address          string
+	AddressNewLine   []byte
 	Rules            []Rule
 	IsAllowedDefault bool
 }
 
 type Rule struct {
-	IsAccept             bool
-	IsAddressWildcard    bool
-	Address              string
-	Mask                 string
-	MinPort              int
-	MaxPort              int
-	IP                   net.IP
-	IPNet                *net.IPNet
-	PolicyAddress        string
-	PolicyAddressNewLine []byte
-	Order                int
+	IsAccept          bool
+	IsAddressWildcard bool
+	Address           string
+	Mask              string
+	MinPort           int
+	MaxPort           int
+	IP                net.IP
+	IPNet             *net.IPNet
+	ParentPolicy      *Policy
+	Order             int
 }
 
 func (r *Rule) IsMatch(ip net.IP) bool {
@@ -46,8 +46,7 @@ func (r Rule) Finalize(p *Policy) *Rule {
 			r.IPNet = &net.IPNet{r.IP.Mask(m), m}
 		}
 	}
-	r.PolicyAddress = p.Address
-	r.PolicyAddressNewLine = []byte(p.Address + "\n")
+	r.ParentPolicy = p
 	return &r
 }
 
