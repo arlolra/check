@@ -26,7 +26,7 @@ func (r Rule) IsMatch(address net.IP, port int) bool {
 	if !r.IsAddressWildcard {
 		if r.IPNet != nil && !r.IPNet.Contains(address) {
 			return false
-		} else if r.IP != nil && !r.IP.Equal(address) {
+		} else if !r.IP.Equal(address) {
 			return false
 		}
 	}
