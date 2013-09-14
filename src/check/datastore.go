@@ -36,16 +36,21 @@ func (e *Exits) IsAllowed(address net.IP, port int, cb func([]byte)) {
 	}
 
 	sort.Sort(OrderedRuleIntervalSlice(rules))
-	matched := make(map[string]bool, len(rules))
 
+	// Keep track of the last policy id to have gotten a result
+	// The sorted rules need to be ordered by Policy.Id (Ascending)
+	lastPolicyResult := -1
 	for _, i := range rules {
 		// TODO: Remove this type assertion? Seems to be triggering memmoves
-		if r := i.Tag.(*Rule); r.IsMatch(address) {
-			if _, ok := matched[r.ParentPolicy.Address]; !ok {
-				matched[r.ParentPolicy.Address] = true
-				if r.IsAccept {
-					cb(r.ParentPolicy.AddressNewLine)
-				}
+		r := i.Tag.(*Rule)
+		if lastPolicyResult >= r.ParentPolicy.Id {
+			continue
+		}
+
+		if r.IsMatch(address) {
+			lastPolicyResult = r.ParentPolicy.Id
+			if r.IsAccept {
+				cb(r.ParentPolicy.AddressNewLine)
 			}
 		}
 	}
@@ -81,7 +86,7 @@ func (e *Exits) Load(source io.Reader) error {
 	intervals := make(intstab.IntervalSlice, 0, 30000)
 
 	dec := json.NewDecoder(source)
-	for {
+	for i := 0; true; i++ {
 		var p Policy
 		if err := dec.Decode(&p); err == io.EOF {
 			break
@@ -90,6 +95,7 @@ func (e *Exits) Load(source io.Reader) error {
 		}
 
 		p.AddressNewLine = []byte(p.Address + "\n")
+		p.Id = i
 		for r := range p.IterateProcessedRules() {
 			tag := &intstab.Interval{uint16(r.MinPort), uint16(r.MaxPort), r}
 			intervals = append(intervals, tag)

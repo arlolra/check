@@ -10,6 +10,7 @@ type Policy struct {
 	AddressNewLine   []byte
 	Rules            []Rule
 	IsAllowedDefault bool
+	Id               int
 }
 
 type Rule struct {
@@ -62,10 +63,20 @@ func (s OrderedRuleIntervalSlice) Swap(i, j int) {
 }
 
 func (s OrderedRuleIntervalSlice) Less(i, j int) bool {
-	return s[i].Tag.(*Rule).Order < s[j].Tag.(*Rule).Order
+	aRule := s[i].Tag.(*Rule)
+	bRule := s[j].Tag.(*Rule)
+	return aRule.Less(bRule)
 }
 
 /* end sort.Interface */
+
+func (r *Rule) Less(other *Rule) bool {
+	return r.ParentPolicy.LessOrEqual(other.ParentPolicy) && r.Order < other.Order
+}
+
+func (p *Policy) LessOrEqual(other *Policy) bool {
+	return p.Id <= other.Id
+}
 
 func (p *Policy) IterateProcessedRules() <-chan *Rule {
 	ch := make(chan *Rule, 1000)
