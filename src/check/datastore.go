@@ -1,7 +1,6 @@
 package check
 
 import (
-	"bytes"
 	"encoding/json"
 	"github.com/Ryman/intstab"
 	"io"
@@ -10,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"sort"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -45,7 +43,7 @@ func (s ByOrder) Less(i, j int) bool {
 	return s.Rules[i].Tag.(*Rule).Order < s.Rules[j].Tag.(*Rule).Order
 }
 
-func (e *Exits) IsAllowed(address net.IP, port int, cb func([]byte)) {
+func (e *Exits) IsAllowed(address net.IP, port int, cb func(string, []byte)) {
 	rules, err := e.List.Intersect(uint16(port))
 	if err != nil {
 		return // TODO: Return error
@@ -60,7 +58,7 @@ func (e *Exits) IsAllowed(address net.IP, port int, cb func([]byte)) {
 			if _, ok := matched[r.PolicyAddress]; !ok {
 				matched[r.PolicyAddress] = true
 				if r.IsAccept {
-					cb(r.PolicyAddressNewLine)
+					cb(r.PolicyAddress, r.PolicyAddressNewLine)
 				}
 			}
 		}
@@ -72,26 +70,19 @@ func (e *Exits) Dump(w io.Writer, ip string, port int) {
 	if address == nil || !ValidPort(port) {
 		return // TODO: Return error
 	}
-	e.IsAllowed(address, port, func(ip []byte) {
+	e.IsAllowed(address, port, func(address string, ip []byte) {
 		w.Write(ip)
 	})
 }
 
 var DefaultTarget = AddressPort{"38.229.70.31", 443}
 
-// This is pretty wastefully implemented, but it's run once per hour
-// so it's not a big deal unless it leaks its memory. Check for that!
 func (e *Exits) PreComputeTorList() {
 	newmap := make(map[string]bool, len(e.TorIPs))
-	buf := new(bytes.Buffer)
-	e.Dump(buf, DefaultTarget.Address, DefaultTarget.Port)
-	strIPs := strings.Split(buf.String(), "\n")
-
-	for _, s := range strIPs {
-		s = strings.Trim(s, " ")
-		newmap[s] = (s != "")
-	}
-
+	addr := net.ParseIP(DefaultTarget.Address)
+	e.IsAllowed(addr, DefaultTarget.Port, func(address string, ip []byte) {
+		newmap[address] = true
+	})
 	e.TorIPs = newmap
 }
 
