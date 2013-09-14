@@ -12,29 +12,40 @@ type Policy struct {
 }
 
 type Rule struct {
-	IsAccept      bool
-	Address       string
-	AddressIP     net.IP
-	MinPort       int
-	MaxPort       int
-	PolicyAddress string
-	// Optimisation:
-	// Reduced allocs from appending \n to each line in dumps
+	IsAccept             bool
+	IsAddressWildcard    bool
+	Address              string
+	Mask                 string
+	MinPort              int
+	MaxPort              int
+	IP                   net.IP
+	IPNet                *net.IPNet
 	PolicyAddressNewLine []byte
 }
 
 func (r *Rule) IsAllowed(ip net.IP) bool {
-	// for accept rules, check if we've got match (or wildcard)
-	// for reject, don't
-	return r.IsAccept == (r.AddressIP == nil || r.AddressIP.Equal(ip))
+	match := true
+	if !r.IsAddressWildcard {
+		if r.IPNet != nil && !r.IPNet.Contains(ip) {
+			match = false
+		} else {
+			match = r.IP.Equal(ip)
+		}
+	}
+	return r.IsAccept == match
 }
 
 // precompute some data for the rule based on parent policy
 func (r Rule) Finalize(p *Policy) *Rule {
-	r.AddressIP = net.ParseIP(r.Address)
-	r.PolicyAddress = p.Address
+	if !r.IsAddressWildcard {
+		r.IP = net.ParseIP(r.Address)
+		if mask := net.ParseIP(r.Mask); r.IP != nil && mask != nil {
+			m := make(net.IPMask, len(mask))
+			copy(m, mask)
+			r.IPNet = &net.IPNet{r.IP.Mask(m), m}
+		}
+	}
 	r.PolicyAddressNewLine = []byte(p.Address + "\n")
-
 	return &r
 }
 
@@ -56,8 +67,8 @@ func (p *Policy) GetRulesDefaultAccept(ch chan *Rule) {
 			// block every port in its range
 			for i := r.MinPort; i <= r.MaxPort; i++ {
 				if !openPorts[i] {
-					log.Print("Found overlapping reject rule in Policy: %v", p)
-					log.Print("Port %v is rejected twice for all IPs", i)
+					log.Printf("Found overlapping reject rule in Policy: %v", p)
+					log.Printf("Port %v is rejected twice for all IPs", i)
 				}
 				// 'close' the port
 				openPorts[i] = false
@@ -83,13 +94,14 @@ func (p *Policy) GetRulesDefaultAccept(ch chan *Rule) {
 			currentRule = new(Rule)
 			currentRule.MinPort = i
 			currentRule.IsAccept = true
+			currentRule.IsAddressWildcard = true
 		} // else we're in the middle of a range, do nothing
 	}
 
 	// add all rules that are ip specific
 	// ip specific rules need to check at query time
 	for _, r := range p.Rules {
-		if r.Address != "" {
+		if !r.IsAddressWildcard {
 			ch <- r.Finalize(p)
 		}
 	}

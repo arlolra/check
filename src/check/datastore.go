@@ -3,7 +3,6 @@ package check
 import (
 	"bytes"
 	"encoding/json"
-	_ "fmt"
 	"github.com/Ryman/intstab"
 	"io"
 	"log"
@@ -74,7 +73,7 @@ func (e *Exits) IsTor(remoteAddr string) bool {
 }
 
 func (e *Exits) Load(source io.Reader) error {
-	e.TorIPs = make(map[string]bool)
+	// maybe more intervals?
 	intervals := make(intstab.IntervalSlice, 0, 30000)
 
 	dec := json.NewDecoder(source)
@@ -85,7 +84,6 @@ func (e *Exits) Load(source io.Reader) error {
 		} else if err != nil {
 			return err
 		}
-
 		for r := range p.IterateProcessedRules() {
 			tag := &intstab.Interval{uint16(r.MinPort), uint16(r.MaxPort), r}
 			intervals = append(intervals, tag)
