@@ -132,7 +132,11 @@ func TestRulesNonWildcard(t *testing.T) {
 }
 
 func TestMaskedIP(t *testing.T) {
-	// TODO
+	testData := `{"Rules": [{"MaxPort": 65535, "IsAddressWildcard": false, "Mask": "255.0.0.0", "Address": "0.0.0.0", "IsAccept": false, "MinPort": 1}, {"MaxPort": 65535, "IsAddressWildcard": false, "Mask": "255.255.0.0", "Address": "169.254.0.0", "IsAccept": false, "MinPort": 1}], "IsAllowedDefault": true, "Address": "111.111.111.111"}`
+	exits := setupExitList(t, testData)
+	expectDump(t, exits, "0.1.2.3", 123)
+	expectDump(t, exits, "169.254.111.111", 345)
+	expectDump(t, exits, "1.1.2.3", 123, "111.111.111.111")
 }
 
 func TestDoubleReject(t *testing.T) {

@@ -28,8 +28,8 @@ type Rule struct {
 
 func (r *Rule) IsMatch(ip net.IP) bool {
 	if !r.IsAddressWildcard {
-		if r.IPNet != nil && !r.IPNet.Contains(ip) {
-			return false
+		if r.IPNet != nil {
+			return r.IPNet.Contains(ip)
 		} else {
 			return r.IP.Equal(ip)
 		}
