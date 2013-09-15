@@ -24,10 +24,14 @@ type Rule struct {
 
 func (r Rule) IsMatch(address net.IP, port int) bool {
 	if !r.IsAddressWildcard {
-		if r.IPNet != nil && !r.IPNet.Contains(address) {
-			return false
-		} else if !r.IP.Equal(address) {
-			return false
+		if r.IPNet != nil {
+			if !r.IPNet.Contains(address) {
+				return false
+			}
+		} else {
+			if !r.IP.Equal(address) {
+				return false
+			}
 		}
 	}
 	if port < r.MinPort || port > r.MaxPort {
@@ -49,28 +53,18 @@ type Policy struct {
 	Address          string
 	Rules            []Rule
 	IsAllowedDefault bool
-	CanExitCache     map[AddressPort]bool
 }
 
-func (p Policy) CanExit(ap AddressPort) (can bool) {
-	if can, ok := p.CanExitCache[ap]; ok {
-		return can // explicit return for shadowed var
-	}
-	// update the cache after we return
-	defer func() { p.CanExitCache[ap] = can }()
-
+func (p Policy) CanExit(ap AddressPort) bool {
 	addr := net.ParseIP(ap.Address)
 	if addr != nil && ValidPort(ap.Port) {
 		for _, rule := range p.Rules {
 			if rule.IsMatch(addr, ap.Port) {
-				can = rule.IsAccept
-				return
+				return rule.IsAccept
 			}
 		}
 	}
-
-	can = p.IsAllowedDefault
-	return
+	return p.IsAllowedDefault
 }
 
 type Exits struct {
@@ -130,7 +124,6 @@ func (e *Exits) Load(source io.Reader) error {
 				}
 			}
 		}
-		p.CanExitCache = make(map[AddressPort]bool)
 		exits[p.Address] = p
 	}
 
