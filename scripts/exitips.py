@@ -19,7 +19,7 @@ for descriptor in parse_file("public/exit-addresses", "tordnsel 1.0"):
     exit_addresses[descriptor.fingerprint] = descriptor.exit_addresses[0][0]
 
 server_descriptors = {}
-for descriptor in parse_file("data/descriptors", "server-descriptor 1.0"):
+for descriptor in parse_file("data/all_descriptors", "server-descriptor 1.0"):
     server_descriptors[descriptor.fingerprint] = descriptor.exit_policy
 
 with open("data/exit-policies", "w") as exit_file:
