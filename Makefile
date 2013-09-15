@@ -13,9 +13,13 @@ consensuses_dir = metrics-recent/relay-descriptors/consensuses/
 exit_lists_dir = metrics-recent/exit-lists/
 latest_exit_list = $(shell rsync $(rsync_server)::$(exit_lists_dir) | tail -1 | tr " " "\n" | tail -1)
 latest_consensus = $(shell rsync $(rsync_server)::$(consensuses_dir) | tail -1 | tr " " "\n" | tail -1)
+descriptors_dir = metrics-recent/relay-descriptors/server-descriptors/
 
 data/:
 	@mkdir -p data
+
+data/descriptors/: data/
+	@mkdir -p data/descriptors
 
 public/:
 	@mkdir -p public
@@ -30,10 +34,36 @@ public/exit-addresses: public/
 	@rsync $(rsync_server)::$(exit_lists_dir)$(strip $(latest_exit_list)) ./public/exit-addresses
 	@echo Exit lists written to file
 
-data/exit-policies: data/consensus public/exit-addresses
+data/exit-policies: data/consensus public/exit-addresses data/all_descriptors
 	@echo Generating exit-policies file
 	@python scripts/exitips.py
 	@echo Done
+
+data/all_descriptors: data/ descriptors
+	@echo "Concatenating data/descriptors/* into data/all_descriptors"
+	@cat data/descriptors/0* > data/all_descriptors
+	@cat data/descriptors/1* >> data/all_descriptors
+	@cat data/descriptors/2* >> data/all_descriptors
+	@cat data/descriptors/3* >> data/all_descriptors
+	@cat data/descriptors/4* >> data/all_descriptors
+	@cat data/descriptors/5* >> data/all_descriptors
+	@cat data/descriptors/6* >> data/all_descriptors
+	@cat data/descriptors/7* >> data/all_descriptors
+	@cat data/descriptors/8* >> data/all_descriptors
+	@cat data/descriptors/9* >> data/all_descriptors
+	@cat data/descriptors/a* >> data/all_descriptors
+	@cat data/descriptors/b* >> data/all_descriptors
+	@cat data/descriptors/c* >> data/all_descriptors
+	@cat data/descriptors/d* >> data/all_descriptors
+	@cat data/descriptors/e* >> data/all_descriptors
+	@cat data/descriptors/f* >> data/all_descriptors
+	@echo "Done"
+
+descriptors:
+	@echo "Getting latest descriptors (This may take a while)"
+	rsync -avz $(rsync_server)::$(descriptors_dir) --delete ./data/descriptors/
+	@echo Done
+
 
 data/langs: data/
 	curl https://www.transifex.com/api/2/languages/ > data/langs
@@ -71,4 +101,4 @@ i18n:
 		fi \
 	done
 
-.PHONY: start build i18n test bench cover profile
+.PHONY: start build i18n test bench cover profile descriptors
