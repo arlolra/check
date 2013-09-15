@@ -8,7 +8,7 @@ DNSEL=/srv/tordnsel.torproject.org/state
 
 cat $DNSEL/exit-addresses $DNSEL/exit-addresses.new > $CHECK/public/exit-addresses
 cp $TORDATA/cached-consensus $CHECK/data/consensus
-cat $TORDATA/cached-descriptors $TORDATA/cached-descriptors.new > $CHECK/data/descriptors
+cat $TORDATA/cached-descriptors $TORDATA/cached-descriptors.new > $CHECK/data/all_descriptors
 
 cd $CHECK
 PYTHONPATH=$GIT/stem scripts/exitips.py
