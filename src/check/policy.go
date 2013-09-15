@@ -51,7 +51,7 @@ func (r Rule) Finalize(p *Policy) *Rule {
 	return &r
 }
 
-/* sort.Interface requirements for Ordering by Rule.Order */
+// sort.Interface requirements
 type OrderedRuleIntervalSlice []*intstab.Interval
 
 func (s OrderedRuleIntervalSlice) Len() int {
@@ -68,7 +68,7 @@ func (s OrderedRuleIntervalSlice) Less(i, j int) bool {
 	return aRule.Less(bRule)
 }
 
-/* end sort.Interface */
+// end sort.Interface
 
 func (r *Rule) Less(other *Rule) bool {
 	return r.ParentPolicy.LessOrEqual(other.ParentPolicy) && r.Order < other.Order
@@ -88,6 +88,7 @@ func (p *Policy) IterateProcessedRules() <-chan *Rule {
 			r.Order = i
 			ch <- r.Finalize(p)
 		}
+		// catchall for default allowed
 		if p.IsAllowedDefault {
 			nr := new(Rule)
 			nr.MinPort = 0

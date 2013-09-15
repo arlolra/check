@@ -76,7 +76,6 @@ type locale struct {
 }
 
 func GetLocaleList() map[string]string {
-	// TODO: This should be it's own translation file
 	haveTranslatedNames := map[string]string{
 		"ar":    "&#1593;&#1585;&#1576;&#1610;&#1577;&nbsp;(Arabiya)",
 		"bms":   "Burmese",
@@ -155,10 +154,6 @@ func GetInstalledLocales(webLocales map[string]locale, nameTranslations map[stri
 
 	locales := make(map[string]string, len(localFiles))
 	for _, f := range localFiles {
-		// TODO: Ensure a language has 100% of the template file
-		// Currently this is what should be on the torcheck_completed
-		// branch on the translations git should be, so we don't really
-		// have to check it in theory...
 		code := f.Name()
 
 		// Only accept folders which have corresponding locale

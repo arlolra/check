@@ -32,21 +32,18 @@ type Exits struct {
 func (e *Exits) IsAllowed(address net.IP, port int, cb func([]byte)) {
 	rules, err := e.List.Intersect(uint16(port))
 	if err != nil {
-		return // TODO: Return error
+		return
 	}
 
 	sort.Sort(OrderedRuleIntervalSlice(rules))
 
-	// Keep track of the last policy id to have gotten a result
-	// The sorted rules need to be ordered by Policy.Id (Ascending)
+	// sorted rules are ordered by Policy.Id (ascending)
 	lastPolicyResult := -1
 	for _, i := range rules {
-		// TODO: Remove this type assertion? Seems to be triggering memmoves
 		r := i.Tag.(*Rule)
 		if lastPolicyResult >= r.ParentPolicy.Id {
 			continue
 		}
-
 		if r.IsMatch(address) {
 			lastPolicyResult = r.ParentPolicy.Id
 			if r.IsAccept {
@@ -59,7 +56,7 @@ func (e *Exits) IsAllowed(address net.IP, port int, cb func([]byte)) {
 func (e *Exits) Dump(w io.Writer, ip string, port int) {
 	address := net.ParseIP(ip)
 	if address == nil || !ValidPort(port) {
-		return // TODO: Return error
+		return
 	}
 	e.IsAllowed(address, port, func(ip []byte) {
 		w.Write(ip)
