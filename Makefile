@@ -59,11 +59,10 @@ data/all_descriptors: data/ descriptors
 	@cat data/descriptors/f* >> data/all_descriptors
 	@echo "Done"
 
-descriptors:
+descriptors: data/descriptors/
 	@echo "Getting latest descriptors (This may take a while)"
 	rsync -avz $(rsync_server)::$(descriptors_dir) --delete ./data/descriptors/
 	@echo Done
-
 
 data/langs: data/
 	curl https://www.transifex.com/api/2/languages/ > data/langs
