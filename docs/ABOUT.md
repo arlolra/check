@@ -16,7 +16,7 @@ The Tor network publishes an hourly [consensus](https://metrics.torproject.org/d
 
 Using the list of relays known to be online, we parse the full exit policy in each server's [server descriptor](https://metrics.torproject.org/data.html#relaydesc) file to determine what's allowed and what isn't.
 
-The IPs from each exit node in the consensus are self published. Instead of trusting that as being correct, we use the [exit lists](https://metrics.torproject.org/data.html#exitlist) published by the [TorDNSel](https://www.torproject.org/projects/tordnsel.html.en) service to determine the public IPs per exit node if they're different from the self published ones. 
+The IPs from each exit node in the consensus are self published. Instead of trusting that as being correct, we use the [exit lists](https://metrics.torproject.org/data.html#exitlist) published by the [TorDNSEL](https://www.torproject.org/projects/tordnsel.html.en) service to determine the public IPs per exit node if they're different from the self published ones.
 
 The formats for these files can be found [here](https://metrics.torproject.org/formats.html#serverdesc) and [here](https://metrics.torproject.org/formats.html#exitlist).
 
