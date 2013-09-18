@@ -16,6 +16,9 @@ msgstr ""
 msgid "Congratulations. Your browser is configured to use Tor."
 msgstr ""
 
+msgid "Congratulations. <u>This</u> browser is configured to use Tor."
+msgstr ""
+
 msgid ""
 "Please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> "
 "for further information about using Tor safely.  You are now free to browse "
@@ -51,3 +54,8 @@ msgstr ""
 msgid "Your IP address appears to be: "
 msgstr ""
 
+msgid "Are you using Tor?"
+msgstr ""
+
+msgid "This page is also available in the following languages:"
+msgstr ""
