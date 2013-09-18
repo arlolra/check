@@ -15,10 +15,6 @@
     go get github.com/samuel/go-gettext/gettext
     make # Note, this might take a while for the first time
 
-  If you want to run the server without pulling the latest files:
-
-    make start
-
   for scripts/exitips.py:
 
     pip install -r requirements.txt
