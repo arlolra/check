@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export GOPATH := $(CURDIR):$(GOPATH)
 export TORCHECKBASE := $(CURDIR)/
 
-start: data/exit-policies data/langs
+start: data/exit-policies data/langs locale/
 	@./check
 
 # Get any data files we're missing
@@ -20,6 +20,8 @@ data/:
 
 data/descriptors/: data/
 	@mkdir -p data/descriptors
+
+locale/: i18n
 
 data/consensus: data/
 	@echo Getting latest consensus document
