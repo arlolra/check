@@ -2,9 +2,9 @@
 
 The core service is a website that allows a user to check if their connection seems to be a [Tor](https://www.torproject.org/) connection or not. This allows the user to know if they have successfully setup their client and are ready to browse the internet privately. It is the default homepage for users of the [Tor Browser Bundle (TBB)](https://www.torproject.org/projects/torbrowser.html.en) for versions below 3.X.
 
-Users of the TBB will also recieve a notification if there are updates available for their software.
+Users of the TBB will also receive a notification if there are updates available for their software.
 
-Check also provides a [bulk exit list tool](https://check.torproject.org/cgi-bin/TorBulkExitList.py) which website owners can enter their server IP and recieve a list of IPs that could potentially make connections to their server on a specific port from the Tor network.
+Check also provides a [bulk exit list tool](https://check.torproject.org/cgi-bin/TorBulkExitList.py) which website owners can enter their server IP and receive a list of IPs that could potentially make connections to their server on a specific port from the Tor network.
 
 ## How does it work?
 
