@@ -6,7 +6,7 @@ CHECK=$GIT/check
 TORDATA=$HOME/.tor
 DNSEL=/srv/tordnsel.torproject.org/state
 
-cat $DNSEL/exit-addresses $DNSEL/exit-addresses.new > $CHECK/public/exit-addresses
+cat $DNSEL/exit-addresses $DNSEL/exit-addresses.new > $CHECK/data/exit-addresses
 cp $TORDATA/cached-consensus $CHECK/data/consensus
 cat $TORDATA/cached-descriptors $TORDATA/cached-descriptors.new > $CHECK/data/all_descriptors
 

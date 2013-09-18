@@ -21,20 +21,17 @@ data/:
 data/descriptors/: data/
 	@mkdir -p data/descriptors
 
-public/:
-	@mkdir -p public
-
 data/consensus: data/
 	@echo Getting latest consensus document
 	@rsync $(rsync_server)::$(consensuses_dir)$(strip $(latest_consensus)) ./data/consensus
 	@echo Consensus written to file
 
-public/exit-addresses: public/
+data/exit-addresses: data/
 	@echo Getting latest exit lists
-	@rsync $(rsync_server)::$(exit_lists_dir)$(strip $(latest_exit_list)) ./public/exit-addresses
+	@rsync $(rsync_server)::$(exit_lists_dir)$(strip $(latest_exit_list)) ./data/exit-addresses
 	@echo Exit lists written to file
 
-data/exit-policies: data/consensus public/exit-addresses data/all_descriptors
+data/exit-policies: data/consensus data/exit-addresses data/all_descriptors
 	@echo Generating exit-policies file
 	@python scripts/exitips.py
 	@echo Done

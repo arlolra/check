@@ -14,7 +14,7 @@ class Router():
         self.Rules = []
 
 exit_addresses = {}
-for descriptor in parse_file("public/exit-addresses", "tordnsel 1.0"):
+for descriptor in parse_file("data/exit-addresses", "tordnsel 1.0"):
     descriptor.exit_addresses.sort(key=operator.itemgetter(1), reverse=True)
     exit_addresses[descriptor.fingerprint] = descriptor.exit_addresses[0][0]
 
