@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export GOPATH := $(CURDIR):$(GOPATH)
 export TORCHECKBASE := $(CURDIR)/
 
-start: data/exit-policies data/langs locale/
+start: data/exit-policies data/langs i18n
 	@./check
 
 # Get any data files we're missing
@@ -20,8 +20,6 @@ data/:
 
 data/descriptors/: data/
 	@mkdir -p data/descriptors
-
-locale/: i18n
 
 data/consensus: data/
 	@echo Getting latest consensus document
@@ -86,7 +84,9 @@ bench: build
 profile: build
 	go test check -cpuprofile ../../cpu.prof -memprofile ../../mem.prof -benchtime 40s -bench "$(filter)"
 
-i18n:
+i18n: locale/
+
+locale/:
 	rm -rf locale
 	git clone -b torcheck_completed https://git.torproject.org/translation.git locale
 	pushd locale; \

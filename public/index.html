@@ -1,6 +1,6 @@
 {{ template "base.html" . }}
 {{ define "lang" }}{{ .Lang }}{{ end }}
-{{ define "title" }}Are you using Tor?{{ end }}
+{{ define "title" }}{{ GetText .Lang "Are you using Tor?" }}{{ end }}
 {{ define "body" }}
   {{ if .NotSmall }}
     <p><img src="/torcheck/img/tor-{{ .OnOff }}.png" class="onion" /></p>
@@ -26,7 +26,7 @@
       {{ GetText .Lang "If you are attempting to use a Tor client, please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> and specifically the <a href=\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for configuring your Tor client</a>." | UnEscaped }}
     {{ end }}
   </p>
-  <p class="small">This page is also available in the following languages:</p>
+  <p class="small">{{ GetText .Lang "This page is also available in the following languages:" }}</p>
   <ul class="small">
     {{ $out := . }}
     {{ range $k, $i := .Locales }}
