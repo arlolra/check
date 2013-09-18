@@ -86,7 +86,7 @@ profile: build
 
 i18n:
 	rm -rf locale
-	git clone -b torcheck https://git.torproject.org/translation.git locale
+	git clone -b torcheck_completed https://git.torproject.org/translation.git locale
 	pushd locale; \
 	for f in *; do \
 		if [ "$$f" != "templates" ]; then \
