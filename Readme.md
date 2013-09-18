@@ -49,8 +49,8 @@ When the data is ready:
 
 ## Capacity planning
 
-> 54.7 requests/sec - 47.0 kB/second - 879 B/request
-> 487 requests currently being processed, 63 idle workers
+> 54.7 requests/sec - 47.0 kB/second - 879 B/request  
+> 487 requests currently being processed, 63 idle workers  
 > that's check right now (43 million hits over the past 9 days)
 
 ## License
