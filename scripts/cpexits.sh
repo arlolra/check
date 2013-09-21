@@ -3,7 +3,7 @@
 HOME=/home/arlo
 GIT=$HOME/git
 CHECK=$GIT/check
-TORDATA=$HOME/.tor
+TORDATA=/srv/tor
 DNSEL=/srv/tordnsel.torproject.org/state
 
 cat $DNSEL/exit-addresses $DNSEL/exit-addresses.new > $CHECK/data/exit-addresses
