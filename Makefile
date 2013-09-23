@@ -1,7 +1,3 @@
-SHELL := /bin/bash
-
-export GOPATH := $(CURDIR):$(GOPATH)
-export TORCHECKBASE := $(CURDIR)/
 
 start: data/exit-policies data/langs i18n
 	@./check
@@ -65,24 +61,23 @@ data/langs: data/
 	curl https://www.transifex.com/api/2/languages/ > data/langs
 
 build:
-	go fmt ./src/check
 	go fmt
 	go build
 
 # Add -i for installing latest version, -v for verbose
 test: build
-	go test check -v -run "$(filter)"
+	go test -v -run "$(filter)"
 
 cover: build
-	go test check -coverprofile cover.out
+	go test -coverprofile cover.out
 
 filter?=.
 bench: build
-	go test check -i
-	go test check -benchtime 10s -bench "$(filter)" -benchmem
+	go test -i
+	go test -benchtime 10s -bench "$(filter)" -benchmem
 
 profile: build
-	go test check -cpuprofile ../../cpu.prof -memprofile ../../mem.prof -benchtime 40s -bench "$(filter)"
+	go test -cpuprofile ../../cpu.prof -memprofile ../../mem.prof -benchtime 40s -bench "$(filter)"
 
 i18n: locale/
 

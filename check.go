@@ -1,7 +1,6 @@
 package main
 
 import (
-	"check"
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
 	"log"
@@ -36,8 +35,8 @@ func main() {
 	}
 
 	// Load Tor exits and listen for SIGUSR2 to reload
-	Exits := new(check.Exits)
-	Exits.Run()
+	exits := new(Exits)
+	exits.Run()
 
 	// files
 	files := http.FileServer(http.Dir("./public"))
@@ -46,8 +45,8 @@ func main() {
 	Phttp.Handle("/", files)
 
 	// routes
-	http.HandleFunc("/", check.RootHandler(check.CompileTemplate(domain, "index.html"), Exits, Phttp))
-	bulk := check.BulkHandler(check.CompileTemplate(domain, "bulk.html"), Exits)
+	http.HandleFunc("/", RootHandler(CompileTemplate(domain, "index.html"), exits, Phttp))
+	bulk := BulkHandler(CompileTemplate(domain, "bulk.html"), exits)
 	http.HandleFunc("/torbulkexitlist", bulk)
 	http.HandleFunc("/cgi-bin/TorBulkExitList.py", bulk)
 
