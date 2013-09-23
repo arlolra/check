@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sort"
 	"syscall"
 	"time"
 )
@@ -67,8 +68,22 @@ func (p Policy) CanExit(ap AddressPort) bool {
 	return p.IsAllowedDefault
 }
 
+type PolicyList []Policy
+
+func (p PolicyList) Less(i, j int) bool {
+	return p[i].Address < p[j].Address
+}
+
+func (p PolicyList) Len() int {
+	return len(p)
+}
+
+func (p PolicyList) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
+
 type Exits struct {
-	List        map[string]Policy
+	List        PolicyList
 	UpdateTime  time.Time
 	ReloadChan  chan os.Signal
 	IsTorLookup map[string]bool
@@ -82,9 +97,9 @@ func (e *Exits) Dump(w io.Writer, ip string, port int) {
 }
 
 func (e *Exits) GetAllExits(ap AddressPort, fn func(ip string)) {
-	for key, val := range e.List {
+	for _, val := range e.List {
 		if val.CanExit(ap) {
-			fn(key)
+			fn(val.Address)
 		}
 	}
 }
@@ -104,7 +119,7 @@ func (e *Exits) IsTor(remoteAddr string) bool {
 }
 
 func (e *Exits) Load(source io.Reader) error {
-	exits := make(map[string]Policy)
+	var exits PolicyList
 	dec := json.NewDecoder(source)
 	for {
 		var p Policy
@@ -124,8 +139,11 @@ func (e *Exits) Load(source io.Reader) error {
 				}
 			}
 		}
-		exits[p.Address] = p
+		exits = append(exits, p)
 	}
+
+	// sort -n
+	sort.Sort(exits)
 
 	// swap in exits
 	e.List = exits
