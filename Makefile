@@ -1,14 +1,9 @@
-
 start: data/exit-policies data/langs i18n
 	@./check
 
-# Get any data files we're missing
-# Be careful with trailing whitespace on these lines
 rsync_server = metrics.torproject.org
 consensuses_dir = metrics-recent/relay-descriptors/consensuses/
 exit_lists_dir = metrics-recent/exit-lists/
-latest_exit_list = $(shell rsync $(rsync_server)::$(exit_lists_dir) | tail -1 | tr " " "\n" | tail -1)
-latest_consensus = $(shell rsync $(rsync_server)::$(consensuses_dir) | tail -1 | tr " " "\n" | tail -1)
 descriptors_dir = metrics-recent/relay-descriptors/server-descriptors/
 
 data/:
@@ -17,44 +12,40 @@ data/:
 data/descriptors/: data/
 	@mkdir -p data/descriptors
 
-data/consensus: data/
-	@echo Getting latest consensus document
-	@rsync $(rsync_server)::$(consensuses_dir)$(strip $(latest_consensus)) ./data/consensus
-	@echo Consensus written to file
+data/consensuses/: data/
+	@mkdir -p data/consensuses
 
-data/exit-addresses: data/
+data/exit-lists/: data/
+	@mkdir -p data/exit-lists
+
+data/consensus: data/consensuses/
+	@echo Getting latest consensus documents
+	@rsync -avz $(rsync_server)::$(consensuses_dir) --delete ./data/consensuses/
+	@echo Consensuses written
+
+data/exit-addresses: data/exit-lists/
 	@echo Getting latest exit lists
-	@rsync $(rsync_server)::$(exit_lists_dir)$(strip $(latest_exit_list)) ./data/exit-addresses
-	@echo Exit lists written to file
+	@rsync -avz $(rsync_server)::$(exit_lists_dir) --delete ./data/exit-lists/
+	@echo Exit lists written
 
-data/exit-policies: data/consensus data/exit-addresses data/all_descriptors
+data/exit-policies: data/consensus data/exit-addresses data/cached-descriptors
 	@echo Generating exit-policies file
 	@python scripts/exitips.py
 	@echo Done
 
-data/all_descriptors: data/ descriptors
-	@echo "Concatenating data/descriptors/* into data/all_descriptors"
-	@cat data/descriptors/0* > data/all_descriptors
-	@cat data/descriptors/1* >> data/all_descriptors
-	@cat data/descriptors/2* >> data/all_descriptors
-	@cat data/descriptors/3* >> data/all_descriptors
-	@cat data/descriptors/4* >> data/all_descriptors
-	@cat data/descriptors/5* >> data/all_descriptors
-	@cat data/descriptors/6* >> data/all_descriptors
-	@cat data/descriptors/7* >> data/all_descriptors
-	@cat data/descriptors/8* >> data/all_descriptors
-	@cat data/descriptors/9* >> data/all_descriptors
-	@cat data/descriptors/a* >> data/all_descriptors
-	@cat data/descriptors/b* >> data/all_descriptors
-	@cat data/descriptors/c* >> data/all_descriptors
-	@cat data/descriptors/d* >> data/all_descriptors
-	@cat data/descriptors/e* >> data/all_descriptors
-	@cat data/descriptors/f* >> data/all_descriptors
+data/cached-descriptors: descriptors
+	@echo "Concatenating data/descriptors/* into data/cached-descriptors"
+	@rm -f data/cached-descriptors
+	@touch data/cached-descriptors
+	@for f in 0 1 2 3 4 5 6 7 8 9 a b c d e f; \
+	do \
+		cat  data/descriptors/$$f* >> data/cached-descriptors; \
+	done
 	@echo "Done"
 
 descriptors: data/descriptors/
 	@echo "Getting latest descriptors (This may take a while)"
-	rsync -avz $(rsync_server)::$(descriptors_dir) --delete ./data/descriptors/
+	@rsync -avz $(rsync_server)::$(descriptors_dir) --delete ./data/descriptors/
 	@echo Done
 
 data/langs: data/
