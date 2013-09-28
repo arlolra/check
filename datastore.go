@@ -51,9 +51,11 @@ type AddressPort struct {
 }
 
 type Policy struct {
+	Fingerprint      string
 	Address          string
 	Rules            []Rule
 	IsAllowedDefault bool
+	Tminus           int
 }
 
 func (p Policy) CanExit(ap AddressPort) bool {
@@ -89,16 +91,16 @@ type Exits struct {
 	IsTorLookup map[string]bool
 }
 
-func (e *Exits) Dump(w io.Writer, ip string, port int) {
+func (e *Exits) Dump(w io.Writer, tminus int, ip string, port int) {
 	ap := AddressPort{ip, port}
-	e.GetAllExits(ap, func(exit string) {
+	e.GetAllExits(ap, tminus, func(exit string) {
 		w.Write([]byte(exit + "\n"))
 	})
 }
 
-func (e *Exits) GetAllExits(ap AddressPort, fn func(ip string)) {
+func (e *Exits) GetAllExits(ap AddressPort, tminus int, fn func(ip string)) {
 	for _, val := range e.List {
-		if val.CanExit(ap) {
+		if val.Tminus <= tminus && val.CanExit(ap) {
 			fn(val.Address)
 		}
 	}
@@ -108,7 +110,7 @@ var DefaultTarget = AddressPort{"38.229.70.31", 443}
 
 func (e *Exits) PreComputeTorList() {
 	newmap := make(map[string]bool)
-	e.GetAllExits(DefaultTarget, func(ip string) {
+	e.GetAllExits(DefaultTarget, 16, func(ip string) {
 		newmap[ip] = true
 	})
 	e.IsTorLookup = newmap

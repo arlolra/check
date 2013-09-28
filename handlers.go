@@ -101,8 +101,9 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
 
-		ip := r.URL.Query().Get("ip")
+		ip := q.Get("ip")
 		if net.ParseIP(ip) == nil {
 			if err := Layout.ExecuteTemplate(w, "bulk.html", nil); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -110,7 +111,7 @@ func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWrit
 			return
 		}
 
-		port_str := r.URL.Query().Get("port")
+		port_str := q.Get("port")
 		port, err := strconv.Atoi(port_str)
 		port_str = "&port=" + port_str
 		if err != nil {
@@ -118,12 +119,17 @@ func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWrit
 			port_str = ""
 		}
 
+		n, err := strconv.Atoi(q.Get("n"))
+		if err != nil {
+			n = 16
+		}
+
 		str := fmt.Sprintf("# This is a list of all Tor exit nodes that can contact %s on Port %d #\n", ip, port)
 		str += fmt.Sprintf("# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%s #\n", ip, port_str)
 		str += fmt.Sprintf("# This file was generated on %v #\n", Exits.UpdateTime.UTC().Format(time.UnixDate))
 		fmt.Fprintf(w, str)
 
-		Exits.Dump(w, ip, port)
+		Exits.Dump(w, n, ip, port)
 	}
 
 }

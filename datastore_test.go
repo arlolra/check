@@ -82,7 +82,7 @@ func TestExitListLoading(t *testing.T) {
 
 func expectDump(t *testing.T, e *Exits, ip string, port int, expected ...string) {
 	buf := new(bytes.Buffer)
-	e.Dump(buf, ip, port)
+	e.Dump(buf, 16, ip, port)
 	checkDump(t, buf.String(), expected...)
 }
 
@@ -173,6 +173,14 @@ func TestMatchedRuleOrdering(t *testing.T) {
 	expectDump(t, exits, "222.222.222.222", 80, "111.111.111.111")
 }
 
+func TestPastHours(t *testing.T) {
+	testData := `{"Rules": [{"IsAccept": true, "MinPort": 80, "MaxPort": 80, "Address": null, "IsAddressWildcard": true}], "IsAllowedDefault": false, "Address": "111.111.111.111", "Tminus": 4}
+	{"Rules": [{"IsAccept": true, "MinPort": 80, "MaxPort": 80, "Address": null, "IsAddressWildcard": true}], "IsAllowedDefault": false, "Address": "222.222.222.222", "Tminus": 17}`
+	exits := setupExitList(t, testData)
+	// Should reject
+	expectDump(t, exits, "123.123.123.123", 80, "111.111.111.111")
+}
+
 func BenchmarkIsTor(b *testing.B) {
 	e := new(Exits)
 	e.LoadFromFile()
@@ -189,7 +197,7 @@ func BenchmarkDumpList(b *testing.B) {
 	buf := new(bytes.Buffer)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		e.Dump(buf, DefaultTarget.Address, DefaultTarget.Port)
+		e.Dump(buf, 16, DefaultTarget.Address, DefaultTarget.Port)
 		buf.Reset()
 	}
 }
