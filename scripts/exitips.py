@@ -5,7 +5,7 @@ import operator
 
 from os import listdir
 from dateutil.parser import parse
-from dateutil.tz import tzlocal
+from dateutil.tz import tzutc, tzlocal
 from datetime import datetime
 from math import floor
 
@@ -43,7 +43,8 @@ for f in consensuses:
     d = f[:-10]
 
     # consensus from t hours ago
-    t = get_hours(now - parse(d))
+    p = parse(d).replace(tzinfo=tzutc())
+    t = get_hours(now - p)
 
     # read in consensus and store routes in exits
     for router in parse_file("data/consensuses/" + f,
