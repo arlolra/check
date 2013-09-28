@@ -22,6 +22,15 @@ class Router():
         self.Tminus = tminus
 
 
+def get_hours(td):
+    try:
+        s = td.total_seconds()
+    catch AttributeError:
+        # workaround for py2.6
+        s = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
+    return int(floor(s / 3600))
+
+
 exits = {}
 now = datetime.now(tzlocal())
 consensuses = listdir("data/consensuses")
@@ -34,7 +43,7 @@ for f in consensuses:
     d = f[:-10]
 
     # consensus from t hours ago
-    t = int(floor((now - parse(d)).total_seconds() / 3600))
+    t = get_hours(now - parse(d))
 
     # read in consensus and store routes in exits
     for router in parse_file("data/consensuses/" + f,
