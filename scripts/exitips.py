@@ -25,7 +25,7 @@ class Router():
 def get_hours(td):
     try:
         s = td.total_seconds()
-    catch AttributeError:
+    except AttributeError:
         # workaround for py2.6
         s = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
     return int(floor(s / 3600))
