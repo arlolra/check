@@ -13,5 +13,5 @@ cp $TORDATA/cached-consensus $CHECK/data/consensuses/$NOW-consensus
 cat $TORDATA/cached-descriptors $TORDATA/cached-descriptors.new > $CHECK/data/cached-descriptors
 
 cd $CHECK
-PYTHONPATH=$GIT/stem:$TAR/six:$TAR/dateutil scripts/exitips.py
+PYTHONPATH=$GIT/stem:$TAR/six:$TAR/dateutil scripts/exitips.py -n 1
 kill -s SIGUSR2 `cat check.pid`

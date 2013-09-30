@@ -49,7 +49,7 @@ descriptors: data/descriptors/
 	@echo Done
 
 data/langs: data/
-	curl https://www.transifex.com/api/2/languages/ > data/langs
+	curl -k https://www.transifex.com/api/2/languages/ > data/langs
 
 build:
 	go fmt

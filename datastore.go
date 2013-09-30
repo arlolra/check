@@ -120,9 +120,31 @@ func (e *Exits) IsTor(remoteAddr string) bool {
 	return e.IsTorLookup[remoteAddr]
 }
 
-func (e *Exits) Load(source io.Reader) error {
+func (e *Exits) Update(exits PolicyList) PolicyList {
+	m := make(map[string]Policy)
+
+	for _, p := range e.List {
+		p.Tminus = p.Tminus + 1
+		m[p.Fingerprint] = p
+	}
+
+	for _, p := range exits {
+		m[p.Fingerprint] = p
+	}
+
+	i := 0
+	exits = make(PolicyList, len(m))
+	for _, p := range m {
+		exits[i] = p
+		i = i + 1
+	}
+	return exits
+}
+
+func (e *Exits) Load(source io.Reader, update bool) error {
 	var exits PolicyList
 	dec := json.NewDecoder(source)
+
 	for {
 		var p Policy
 		if err := dec.Decode(&p); err == io.EOF {
@@ -144,26 +166,28 @@ func (e *Exits) Load(source io.Reader) error {
 		exits = append(exits, p)
 	}
 
+	// bump entries by an hour that aren't in this list
+	if update {
+		exits = e.Update(exits)
+	}
+
 	// sort -n
 	sort.Sort(exits)
 
-	// swap in exits
 	e.List = exits
 	e.UpdateTime = time.Now()
-
-	// precompute IsTor
 	e.PreComputeTorList()
 
 	return nil
 }
 
-func (e *Exits) LoadFromFile() {
+func (e *Exits) LoadFromFile(update bool) {
 	file, err := os.Open(os.ExpandEnv("${TORCHECKBASE}data/exit-policies"))
 	defer file.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = e.Load(file); err != nil {
+	if err = e.Load(file, update); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -174,9 +198,9 @@ func (e *Exits) Run() {
 	go func() {
 		for {
 			<-e.ReloadChan
-			e.LoadFromFile()
-			log.Println("Exit list reloaded.")
+			e.LoadFromFile(true)
+			log.Println("Exit list updated.")
 		}
 	}()
-	e.LoadFromFile()
+	e.LoadFromFile(false)
 }

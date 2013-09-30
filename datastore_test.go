@@ -57,7 +57,7 @@ func (e *Exits) assertIsTor(t *testing.T, ip string, expected bool) {
 
 func setupExitList(t *testing.T, testData string) (e *Exits) {
 	e = new(Exits)
-	err := e.Load(strings.NewReader(testData))
+	err := e.Load(strings.NewReader(testData), false)
 	if err != nil {
 		t.Fatal("Failed to load data")
 	}
@@ -183,7 +183,7 @@ func TestPastHours(t *testing.T) {
 
 func BenchmarkIsTor(b *testing.B) {
 	e := new(Exits)
-	e.LoadFromFile()
+	e.LoadFromFile(false)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		e.IsTor("91.121.43.80")
@@ -193,7 +193,7 @@ func BenchmarkIsTor(b *testing.B) {
 
 func BenchmarkDumpList(b *testing.B) {
 	e := new(Exits)
-	e.LoadFromFile()
+	e.LoadFromFile(false)
 	buf := new(bytes.Buffer)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
