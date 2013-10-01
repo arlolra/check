@@ -73,7 +73,7 @@ def main(consensuses, exit_lists):
             descriptor.exit_addresses.sort(key=operator.itemgetter(1),
                                            reverse=True)
             e = exits.get(descriptor.fingerprint, None)
-            if e is not None and e.Tminus == d:
+            if e is not None and e.Tminus == t:
                 e.Address = descriptor.exit_addresses[0][0]
 
     # update all with server descriptor info
