@@ -50,7 +50,7 @@ func checkDump(t *testing.T, dumpStr string, expected ...string) {
 }
 
 func (e *Exits) assertIsTor(t *testing.T, ip string, expected bool) {
-	if ok := e.IsTor(ip); ok != expected {
+	if _, ok := e.IsTor(ip); ok != expected {
 		t.Errorf("Failed IsTor Assert for %s, got %v but wanted %v", ip, ok, expected)
 	}
 }

@@ -88,20 +88,20 @@ type Exits struct {
 	List        PolicyList
 	UpdateTime  time.Time
 	ReloadChan  chan os.Signal
-	IsTorLookup map[string]bool
+	IsTorLookup map[string]string
 }
 
 func (e *Exits) Dump(w io.Writer, tminus int, ip string, port int) {
 	ap := AddressPort{ip, port}
-	e.GetAllExits(ap, tminus, func(exit string) {
+	e.GetAllExits(ap, tminus, func(exit string, _ string) {
 		w.Write([]byte(exit + "\n"))
 	})
 }
 
-func (e *Exits) GetAllExits(ap AddressPort, tminus int, fn func(ip string)) {
+func (e *Exits) GetAllExits(ap AddressPort, tminus int, fn func(string, string)) {
 	for _, val := range e.List {
 		if val.Tminus <= tminus && val.CanExit(ap) {
-			fn(val.Address)
+			fn(val.Address, val.Fingerprint)
 		}
 	}
 }
@@ -109,15 +109,16 @@ func (e *Exits) GetAllExits(ap AddressPort, tminus int, fn func(ip string)) {
 var DefaultTarget = AddressPort{"38.229.70.31", 443}
 
 func (e *Exits) PreComputeTorList() {
-	newmap := make(map[string]bool)
-	e.GetAllExits(DefaultTarget, 16, func(ip string) {
-		newmap[ip] = true
+	newmap := make(map[string]string)
+	e.GetAllExits(DefaultTarget, 16, func(ip string, fingerprint string) {
+		newmap[ip] = fingerprint
 	})
 	e.IsTorLookup = newmap
 }
 
-func (e *Exits) IsTor(remoteAddr string) bool {
-	return e.IsTorLookup[remoteAddr]
+func (e *Exits) IsTor(remoteAddr string) (fingerprint string, ok bool) {
+	fingerprint, ok = e.IsTorLookup[remoteAddr]
+	return
 }
 
 func (e *Exits) Update(exits PolicyList) PolicyList {

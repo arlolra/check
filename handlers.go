@@ -13,14 +13,15 @@ var Locales = GetLocaleList()
 
 // page model
 type Page struct {
-	IsTor    bool
-	UpToDate bool
-	NotSmall bool
-	OnOff    string
-	Lang     string
-	IP       string
-	Extra    string
-	Locales  map[string]string
+	IsTor       bool
+	UpToDate    bool
+	NotSmall    bool
+	Fingerprint string
+	OnOff       string
+	Lang        string
+	IP          string
+	Extra       string
+	Locales     map[string]string
 }
 
 func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) func(http.ResponseWriter, *http.Request) {
@@ -40,12 +41,15 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 			host, _, err = net.SplitHostPort(r.RemoteAddr)
 		}
 
+		var (
+			isTor       bool
+			fingerprint string
+		)
 		// determine if we're in Tor
-		var isTor bool
 		if err != nil {
 			isTor = false
 		} else {
-			isTor = Exits.IsTor(host)
+			fingerprint, isTor = Exits.IsTor(host)
 		}
 
 		// short circuit for torbutton
@@ -82,6 +86,7 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 			isTor,
 			isTor && !upToDate,
 			!small,
+			fingerprint,
 			onOff,
 			Lang(r),
 			host,
