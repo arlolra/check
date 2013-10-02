@@ -1,5 +1,5 @@
 # TorCheck gettext template
-# Copyright (C) 2008-2012 The Tor Project, Inc
+# Copyright (C) 2008-2013 The Tor Project, Inc
 #
 msgid ""
 msgstr ""
@@ -13,10 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 
-msgid "Congratulations. Your browser is configured to use Tor."
-msgstr ""
-
-msgid "Congratulations. <u>This</u> browser is configured to use Tor."
+msgid "Congratulations. This browser is configured to use Tor."
 msgstr ""
 
 msgid ""
