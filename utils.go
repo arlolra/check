@@ -54,7 +54,10 @@ func CompileTemplate(domain *gettext.Domain, templateName string) *template.Temp
 	if Layout == nil {
 		Layout = template.New("")
 		Layout = Layout.Funcs(FuncMap(domain))
-		Layout, err = Layout.ParseFiles("public/base.html")
+		Layout, err = Layout.ParseFiles(
+			"public/base.html",
+			"public/torbutton.html",
+		)
 		if err != nil {
 			log.Fatal(err)
 		}
