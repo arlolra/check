@@ -1,9 +1,24 @@
 {{ template "base.html" . }}
 {{ define "lang" }}{{ .Lang }}{{ end }}
 {{ define "title" }}{{ GetText .Lang "Are you using Tor?" }}{{ end }}
+{{ define "head" }}
+<form action="/" method="get" id="lang">
+  {{ if .Small }}<input type="hidden" name="small" value="1" />{{ end }}
+  {{ if And .IsTor (Not .UpToDate) }}<input type="hidden" name="uptodate" value="0" />{{ end }}
+  <label for="lang" class="small">{{ GetText .Lang "This page is also available in the following languages:" }}</label>
+  <select name="lang" onchange="onChange()">
+    {{ $out := . }}
+      <option value="en_US">
+    {{ range $k, $i := .Locales }}
+      <option value="{{ $k }}" {{ if Equal $k $out.Lang }}selected="selected"{{ end }}>{{ $i | UnEscaped }}</option>
+    {{ end }}
+  </select>
+  <input type="submit" value="Go" />
+</form>
+{{ end }}
 {{ define "body" }}
-  {{ if .NotSmall }}
-    <p><img src="/torcheck/img/tor-{{ .OnOff }}.png" class="onion" /></p>
+  {{ if Not .Small }}
+    <img src="/torcheck/img/tor-{{ .OnOff }}.png" class="onion" />
   {{ end }}
   <h1 class="{{ .OnOff }}">
     {{ if .IsTor }}
@@ -13,7 +28,7 @@
     {{ end }}
   </h1>
   <p>{{ GetText .Lang "Your IP address appears to be: " }} <strong>{{ .IP }}</strong></p>
-  {{ if .UpToDate }}
+  {{ if And .IsTor (Not .UpToDate) }}
     <p class="security">
       {{ GetText .Lang "There is a security update available for the Tor Browser Bundle." }}<br />
       {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}
@@ -27,11 +42,12 @@
       {{ GetText .Lang "If you are attempting to use a Tor client, please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> and specifically the <a href=\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for configuring your Tor client</a>." | UnEscaped }}
     {{ end }}
   </p>
-  <p class="small">{{ GetText .Lang "This page is also available in the following languages:" }}</p>
-  <ul class="small">
-    {{ $out := . }}
-    {{ range $k, $i := .Locales }}
-      <li><a href="/?lang={{ $k }}{{ $out.Extra | UnEscapedURL }}">{{ $i | UnEscaped }}</a></li>
-    {{ end }}
-  </ul>
+{{ end }}
+{{ define "foot" }}
+<script>
+  function onChange() {
+    var form = document.getElementById("lang");
+    form.submit();
+  }
+</script>
 {{ end }}

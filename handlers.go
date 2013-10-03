@@ -19,12 +19,11 @@ var Locales = GetLocaleList()
 type Page struct {
 	IsTor       bool
 	UpToDate    bool
-	NotSmall    bool
+	Small       bool
 	Fingerprint string
 	OnOff       string
 	Lang        string
 	IP          string
-	Extra       string
 	Locales     map[string]string
 }
 
@@ -72,28 +71,15 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 			onOff = "off"
 		}
 
-		small := Small(r)
-		upToDate := UpToDate(r)
-
-		// querystring params
-		extra := ""
-		if small {
-			extra += "&small=1"
-		}
-		if !upToDate {
-			extra += "&uptodate=0"
-		}
-
 		// instance of your page model
 		p := Page{
 			isTor,
-			isTor && !upToDate,
-			!small,
+			UpToDate(r),
+			Small(r),
 			fingerprint,
 			onOff,
 			Lang(r),
 			host,
-			extra,
 			Locales,
 		}
 

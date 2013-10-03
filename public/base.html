@@ -6,10 +6,12 @@
   <title>{{ template "title" . }}</title>
   <link rel="icon" type="image/x-icon" href="/torcheck/favicon.ico" />
   <style>
+    html { height: 100%; }
     body {
-    	text-align: center;
-    	font-family: Helvetica, sans-serif;
-    	margin: 2em 4em;
+      height: 100%;
+      text-align: center;
+      font-family: Helvetica, sans-serif;
+      margin: 0;
     }
     a { text-decoration: none; }
     a:hover { text-decoration: underline; }
@@ -42,9 +44,34 @@
       display: inline;
       margin-right: 0.4em;
     }
+    .content {
+      padding: 4em;
+    }
+    .foot {
+      padding: 2em 4em;
+    }
+    .head {
+      background-color: #85559f;
+      padding: 0.8em 0;
+      color: #fff;
+    }
+    .project {
+      margin: 0;
+      font-size: 0.8em;
+    }
+    .project a { color: #fff; }
   </style>
 </head>
 <body>
-  {{ template "body" . }}
+  <div class="head">
+    {{ template "head" . }}
+  </div>
+  <div class="content">
+    {{ template "body" . }}
+  </div>
+  <div class="foot">
+    {{ template "foot" . }}
+    <p class="project">The Tor Project is a US 501(c)(3) non-profit dedicated to the research, development, and education of online anonymity and privacy. <a href="https://www.torproject.org/about/overview.html.en">Learn More &raquo;</a></p>
+  </div>
 </body>
 </html>

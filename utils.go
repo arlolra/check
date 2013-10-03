@@ -59,6 +59,15 @@ func FuncMap(domain *gettext.Domain) template.FuncMap {
 		"GetText": func(lang string, text string) string {
 			return domain.GetText(lang, text)
 		},
+		"Equal": func(one string, two string) bool {
+			return one == two
+		},
+		"Not": func(b bool) bool {
+			return !b
+		},
+		"And": func(a bool, b bool) bool {
+			return a && b
+		},
 	}
 }
 
@@ -164,6 +173,8 @@ func GetInstalledLocales(webLocales map[string]locale, nameTranslations map[stri
 	}
 
 	locales := make(map[string]string, len(localFiles))
+	locales["en_US"] = "English"
+
 	for _, f := range localFiles {
 		// TODO: Ensure a language has 100% of the template file
 		// Currently this is what should be on the torcheck_completed
