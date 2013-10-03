@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/samuel/go-gettext/gettext"
 	"html/template"
 	"io"
@@ -9,6 +10,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"net/url"
 )
 
 func UpToDate(r *http.Request) bool {
@@ -31,6 +34,18 @@ func Lang(r *http.Request) string {
 		lang = "en_US"
 	}
 	return lang
+}
+
+func GetQS(q url.Values, param string, deflt int) (num int, str string) {
+	str = q.Get(param)
+	num, err := strconv.Atoi(str)
+	if err != nil {
+		num = deflt
+		str = ""
+	} else {
+		str = fmt.Sprintf("&%s=%s", param, str)
+	}
+	return
 }
 
 func FuncMap(domain *gettext.Domain) template.FuncMap {

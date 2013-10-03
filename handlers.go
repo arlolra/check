@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"net"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -116,23 +115,8 @@ func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWrit
 			return
 		}
 
-		port_str := q.Get("port")
-		port, err := strconv.Atoi(port_str)
-		if err != nil {
-			port = 80
-			port_str = ""
-		} else {
-			port_str = "&port=" + port_str
-		}
-
-		n_str := q.Get("n")
-		n, err := strconv.Atoi(n_str)
-		if err != nil {
-			n = 16
-			n_str = ""
-		} else {
-			n_str = "&n=" + n_str
-		}
+		port, port_str := GetQS(q, "port", 80)
+		n, n_str := GetQS(q, "n", 16)
 
 		str := fmt.Sprintf("# This is a list of all Tor exit nodes from the past %d hours that can contact %s on port %d #\n", n, ip, port)
 		str += fmt.Sprintf("# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%s%s #\n", ip, port_str, n_str)
