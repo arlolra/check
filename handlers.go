@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net"
 	"net/http"
 	"time"
@@ -53,8 +54,8 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 
 		// short circuit for torbutton
 		if len(r.URL.Query().Get("TorButton")) > 0 {
-			if err := Layout.ExecuteTemplate(w, "torbutton.html", isTor); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+			if err := Layout.ExecuteTemplate(w, "torbutton.html", isTor); err != nil && NotHeadErr(err) {
+				log.Printf("Layout.ExecuteTemplate: %v", err)
 			}
 			return
 		}
@@ -94,8 +95,8 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 		}
 
 		// render the template
-		if err := Layout.ExecuteTemplate(w, "index.html", p); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := Layout.ExecuteTemplate(w, "index.html", p); err != nil && NotHeadErr(err) {
+			log.Printf("Layout.ExecuteTemplate: %v", err)
 		}
 
 	}
@@ -109,8 +110,8 @@ func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWrit
 
 		ip := q.Get("ip")
 		if net.ParseIP(ip) == nil {
-			if err := Layout.ExecuteTemplate(w, "bulk.html", nil); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+			if err := Layout.ExecuteTemplate(w, "bulk.html", nil); err != nil && NotHeadErr(err) {
+				log.Printf("Layout.ExecuteTemplate: %v", err)
 			}
 			return
 		}

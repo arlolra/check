@@ -9,9 +9,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
-	"net/url"
+	"strings"
 )
 
 func UpToDate(r *http.Request) bool {
@@ -48,6 +49,11 @@ func GetQS(q url.Values, param string, deflt int) (num int, str string) {
 	return
 }
 
+func NotHeadErr(err error) bool {
+	// should just be able to compare errors but executetemplate formats it
+	return !strings.Contains(err.Error(), http.ErrBodyNotAllowed.Error())
+}
+
 func FuncMap(domain *gettext.Domain) template.FuncMap {
 	return template.FuncMap{
 		"UnEscaped": func(x string) interface{} {
@@ -65,27 +71,19 @@ func FuncMap(domain *gettext.Domain) template.FuncMap {
 var Layout *template.Template
 
 func CompileTemplate(domain *gettext.Domain, templateName string) *template.Template {
-	var err error
 	if Layout == nil {
 		Layout = template.New("")
 		Layout = Layout.Funcs(FuncMap(domain))
-		Layout, err = Layout.ParseFiles(
+		Layout = template.Must(Layout.ParseFiles(
 			"public/base.html",
 			"public/torbutton.html",
-		)
-		if err != nil {
-			log.Fatal(err)
-		}
+		))
 	}
 	l, err := Layout.Clone()
 	if err != nil {
 		log.Fatal(err)
 	}
-	l, err = l.ParseFiles("public/" + templateName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return l
+	return template.Must(l.ParseFiles("public/" + templateName))
 }
 
 type locale struct {
