@@ -12,7 +12,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 )
 
 func UpToDate(r *http.Request) bool {
@@ -47,11 +46,6 @@ func GetQS(q url.Values, param string, deflt int) (num int, str string) {
 		str = fmt.Sprintf("&%s=%s", param, str)
 	}
 	return
-}
-
-func NotHeadErr(err error) bool {
-	// should just be able to compare errors but executetemplate formats it
-	return !strings.Contains(err.Error(), http.ErrBodyNotAllowed.Error())
 }
 
 func FuncMap(domain *gettext.Domain) template.FuncMap {

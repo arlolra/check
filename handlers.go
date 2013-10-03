@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/samuel/go-gettext/gettext"
 	"html/template"
+	"io"
 	"log"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -24,7 +28,7 @@ type Page struct {
 	Locales     map[string]string
 }
 
-func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) func(http.ResponseWriter, *http.Request) {
+func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain, Phttp *http.ServeMux) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -34,17 +38,18 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 			return
 		}
 
+		var (
+			err         error
+			isTor       bool
+			fingerprint string
+		)
+
 		// get remote ip
 		host := r.Header.Get("X-Forwarded-For")
-		var err error
 		if len(host) == 0 {
 			host, _, err = net.SplitHostPort(r.RemoteAddr)
 		}
 
-		var (
-			isTor       bool
-			fingerprint string
-		)
 		// determine if we're in Tor
 		if err != nil {
 			isTor = false
@@ -54,9 +59,7 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 
 		// short circuit for torbutton
 		if len(r.URL.Query().Get("TorButton")) > 0 {
-			if err := Layout.ExecuteTemplate(w, "torbutton.html", isTor); err != nil && NotHeadErr(err) {
-				log.Printf("Layout.ExecuteTemplate: %v", err)
-			}
+			WriteHTMLBuf(w, r, Layout, domain, "torbutton.html", Page{IsTor: isTor})
 			return
 		}
 
@@ -95,24 +98,19 @@ func RootHandler(Layout *template.Template, Exits *Exits, Phttp *http.ServeMux) 
 		}
 
 		// render the template
-		if err := Layout.ExecuteTemplate(w, "index.html", p); err != nil && NotHeadErr(err) {
-			log.Printf("Layout.ExecuteTemplate: %v", err)
-		}
-
+		WriteHTMLBuf(w, r, Layout, domain, "index.html", p)
 	}
 
 }
 
-func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWriter, *http.Request) {
+func BulkHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 
 		ip := q.Get("ip")
 		if net.ParseIP(ip) == nil {
-			if err := Layout.ExecuteTemplate(w, "bulk.html", nil); err != nil && NotHeadErr(err) {
-				log.Printf("Layout.ExecuteTemplate: %v", err)
-			}
+			WriteHTMLBuf(w, r, Layout, domain, "bulk.html", Page{})
 			return
 		}
 
@@ -127,4 +125,27 @@ func BulkHandler(Layout *template.Template, Exits *Exits) func(http.ResponseWrit
 		Exits.Dump(w, n, ip, port)
 	}
 
+}
+
+func WriteHTMLBuf(w http.ResponseWriter, r *http.Request, Layout *template.Template, domain *gettext.Domain, tmp string, p Page) {
+	buf := new(bytes.Buffer)
+
+	// render template
+	if err := Layout.ExecuteTemplate(buf, tmp, p); err != nil {
+		log.Printf("Layout.ExecuteTemplate: %v", err)
+		http.Error(w, domain.GetText(p.Lang, "Sorry, your query failed or an unexpected response was received."), http.StatusInternalServerError)
+		return
+	}
+
+	// set some headers
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if r.Method == "HEAD" {
+		w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
+		return
+	}
+
+	// write buf
+	if _, err := io.Copy(w, buf); err != nil {
+		log.Printf("io.Copy: %v", err)
+	}
 }

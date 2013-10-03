@@ -45,8 +45,8 @@ func main() {
 	Phttp.Handle("/", files)
 
 	// routes
-	http.HandleFunc("/", RootHandler(CompileTemplate(domain, "index.html"), exits, Phttp))
-	bulk := BulkHandler(CompileTemplate(domain, "bulk.html"), exits)
+	http.HandleFunc("/", RootHandler(CompileTemplate(domain, "index.html"), exits, domain, Phttp))
+	bulk := BulkHandler(CompileTemplate(domain, "bulk.html"), exits, domain)
 	http.HandleFunc("/torbulkexitlist", bulk)
 	http.HandleFunc("/cgi-bin/TorBulkExitList.py", bulk)
 
