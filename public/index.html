@@ -6,7 +6,7 @@
   {{ if .Small }}<input type="hidden" name="small" value="1" />{{ end }}
   {{ if And .IsTor (Not .UpToDate) }}<input type="hidden" name="uptodate" value="0" />{{ end }}
   <label for="lang" class="small">{{ GetText .Lang "This page is also available in the following languages:" }}</label>
-  <select name="lang" onchange="onChange()">
+  <select id="cl" name="lang">
     {{ $out := . }}
       <option value="en_US">
     {{ range $k, $i := .Locales }}
@@ -45,9 +45,8 @@
 {{ end }}
 {{ define "foot" }}
 <script>
-  function onChange() {
-    var form = document.getElementById("lang");
-    form.submit();
-  }
+  document.getElementById("cl").addEventListener("change", function () {
+    document.getElementById("lang").submit();
+  });
 </script>
 {{ end }}
