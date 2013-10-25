@@ -1,17 +1,34 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
 	"log"
 	"net/http"
 	"os"
+	"path"
 )
 
 func main() {
 
+	// command line args
+	logPath := flag.String("log", "", "path to log file; otherwise stdout")
+	pidPath := flag.String("pid", "./", "path to create pid")
+	port := flag.Int("port", 8000, "port to listen on")
+	flag.Parse()
+
+	// log to file
+	if len(*logPath) > 0 {
+		f, err := os.Create(*logPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.SetOutput(f)
+	}
+
 	// write pid
-	pid, err := os.Create("check.pid")
+	pid, err := os.Create(path.Join(*pidPath, "check.pid"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -20,12 +37,6 @@ func main() {
 	}
 	if err = pid.Close(); err != nil {
 		log.Fatal(err)
-	}
-
-	// determine which port to run on
-	port := os.Getenv("PORT")
-	if len(port) == 0 {
-		port = "8000"
 	}
 
 	// load i18n
@@ -51,7 +62,7 @@ func main() {
 	http.HandleFunc("/cgi-bin/TorBulkExitList.py", bulk)
 
 	// start the server
-	log.Printf("Listening on port: %s\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
+	log.Printf("Listening on port: %d\n", *port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 
 }
