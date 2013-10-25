@@ -36,11 +36,7 @@ data/exit-policies: data/consensus data/exit-addresses data/cached-descriptors
 data/cached-descriptors: descriptors
 	@echo "Concatenating data/descriptors/* into data/cached-descriptors"
 	@rm -f data/cached-descriptors
-	@touch data/cached-descriptors
-	@for f in 0 1 2 3 4 5 6 7 8 9 a b c d e f; \
-	do \
-		cat  data/descriptors/$$f* >> data/cached-descriptors; \
-	done
+	find data/descriptors -type f -mmin -60 | xargs cat > data/cached-descriptors
 	@echo "Done"
 
 descriptors: data/descriptors/
