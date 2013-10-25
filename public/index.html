@@ -4,7 +4,7 @@
 {{ define "head" }}
 <form action="/" method="get" id="lang">
   {{ if .Small }}<input type="hidden" name="small" value="1" />{{ end }}
-  {{ if And .IsTor (Not .UpToDate) }}<input type="hidden" name="uptodate" value="0" />{{ end }}
+  {{ if And .IsTor .NotUpToDate }}<input type="hidden" name="uptodate" value="0" />{{ end }}
   <label for="lang" class="small">{{ GetText .Lang "This page is also available in the following languages:" }}</label>
   <select id="cl" name="lang">
     {{ $out := . }}
@@ -28,7 +28,7 @@
     {{ end }}
   </h1>
   <p>{{ GetText .Lang "Your IP address appears to be: " }} <strong>{{ .IP }}</strong></p>
-  {{ if And .IsTor (Not .UpToDate) }}
+  {{ if And .IsTor .NotUpToDate }}
     <p class="security">
       {{ GetText .Lang "There is a security update available for the Tor Browser Bundle." }}<br />
       {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}

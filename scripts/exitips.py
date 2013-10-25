@@ -56,6 +56,8 @@ def main(consensuses, exit_lists):
                 for x in router.exit_policy._get_rules():
                     r.Rules.append({
                         "IsAddressWildcard": True,
+                        "Address": "",
+                        "Mask": "",
                         "IsAccept": x.is_accept,
                         "MinPort": x.min_port,
                         "MaxPort": x.max_port
@@ -83,7 +85,7 @@ def main(consensuses, exit_lists):
             rules = []
             for x in descriptor.exit_policy._get_rules():
                 is_address_wildcard = x.is_address_wildcard()
-                mask = None
+                mask = ""
                 if not is_address_wildcard:
                     address_type = x.get_address_type()
                     if (address_type == AddressType.IPv4 and
@@ -93,8 +95,8 @@ def main(consensuses, exit_lists):
                         mask = x.get_mask()
                 rules.append({
                     "IsAddressWildcard": is_address_wildcard,
-                    "Address": x.address,
-                    "Mask": mask,
+                    "Address": "" if x.address is None else x.address,
+                    "Mask": "" if mask is None else mask,
                     "IsAccept": x.is_accept,
                     "MinPort": x.min_port,
                     "MaxPort": x.max_port

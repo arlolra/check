@@ -18,7 +18,7 @@ var Locales = GetLocaleList()
 // page model
 type Page struct {
 	IsTor       bool
-	UpToDate    bool
+	NotUpToDate bool
 	Small       bool
 	Fingerprint string
 	OnOff       string
@@ -74,7 +74,7 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 		// instance of your page model
 		p := Page{
 			isTor,
-			UpToDate(r),
+			!UpToDate(r),
 			Small(r),
 			fingerprint,
 			onOff,
