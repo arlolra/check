@@ -1,2 +1,2 @@
 python-dateutil==2.1
--e git+https://git.torproject.org/stem.git@032df08a5591afaf810dabdbca9177fcc528a7ee#egg=stem
+stem==1.1.0
