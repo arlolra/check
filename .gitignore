@@ -3,6 +3,7 @@
 /check.pid
 /check
 /locale
+/vagrant
 *mem.prof
 *cpu.prof
 *cover.out
