@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-start: data/exit-policies data/langs i18n
+start: exits i18n
 	@./check
 
 rsync_server = metrics.torproject.org
@@ -30,7 +30,7 @@ data/exit-addresses: data/exit-lists/
 	@rsync -avz $(rsync_server)::$(exit_lists_dir) --delete ./data/exit-lists/
 	@echo Exit lists written
 
-data/exit-policies: data/consensus data/exit-addresses data/cached-descriptors
+exits: data/consensus data/exit-addresses data/cached-descriptors
 	@echo Generating exit-policies file
 	@python scripts/exitips.py
 	@echo Done
@@ -68,7 +68,7 @@ bench: build
 profile: build
 	go test -cpuprofile ../../cpu.prof -memprofile ../../mem.prof -benchtime 40s -bench "$(filter)"
 
-i18n: locale/
+i18n: locale/ data/langs
 
 locale/:
 	rm -rf locale
@@ -88,4 +88,4 @@ install: build
 	cp scripts/check.init /etc/init.d/check
 	update-rc.d check defaults
 
-.PHONY: start build i18n test bench cover profile descriptors install
+.PHONY: start build i18n exits test bench cover profile descriptors install

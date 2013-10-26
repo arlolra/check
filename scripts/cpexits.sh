@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
-HOME=/home/arlo
-GIT=$HOME/git
-TAR=$HOME/tar
-CHECK=$GIT/check
+CHECK=/opt/check
 TORDATA=/srv/tor
 DNSEL=/srv/tordnsel.torproject.org/state
 NOW=$(date +"%Y-%m-%d-%H-%M-%S")
@@ -13,5 +10,5 @@ cp $TORDATA/cached-consensus $CHECK/data/consensuses/$NOW-consensus
 cat $TORDATA/cached-descriptors $TORDATA/cached-descriptors.new > $CHECK/data/cached-descriptors
 
 cd $CHECK
-PYTHONPATH=$GIT/stem:$TAR/six:$TAR/dateutil scripts/exitips.py -n 1
+scripts/exitips.py -n 1
 kill -s SIGUSR2 `cat check.pid`

@@ -44,6 +44,25 @@ The data that `make start` pulls in will quickly become stale. What you want to 
 
 Then setup a cron job to run a script like `scripts/cpexits.sh` every hour. Setting up TorDNSEL to get the exit addresses is beyond the scope of this readme.
 
+## Setup
+
+Assuming debian, install the dependencies,
+
+    apt-get install git golang gettext python-dateutil python-stem
+		go get github.com/samuel/go-gettext/gettext
+
+The cron job and init script assume a base directory of `/opt/check`.
+
+    git clone https://git.torproject.org/check.git /opt/check
+		cd /opt/check
+		make i18n
+		make exits
+		make install
+
+Then you start it up,
+
+    /etc/init.d/check start
+
 ## Capacity planning
 
 > 54.7 requests/sec - 47.0 kB/second - 879 B/request  
