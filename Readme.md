@@ -17,9 +17,13 @@ Generating the exit list requires [stem](https://stem.torproject.org/), Tor's `p
 
     pip install -r requirements.txt
 
+Alternatively,
+
+    apt-get install python-dateutil python-stem  # stem 1.1 is in unstable
+
 For the server itself, you'll need `go` and `gettext`. Installing that might look like:
 
-    apt-get install golang gettext
+    apt-get install git golang gettext
     go get github.com/samuel/go-gettext/gettext
 
 Then you can run `make` and wait for `git` and `rsync` to fetch all the data and launch the server.
