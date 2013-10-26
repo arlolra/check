@@ -81,4 +81,9 @@ locale/:
 		fi \
 	done
 
-.PHONY: start build i18n test bench cover profile descriptors
+install: build
+	mv check /usr/local/bin/check
+	cp scripts/check.init /etc/init.d/check
+	update-rc.d check defaults
+
+.PHONY: start build i18n test bench cover profile descriptors install
