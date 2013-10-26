@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"strconv"
 )
 
@@ -73,20 +74,20 @@ func FuncMap(domain *gettext.Domain) template.FuncMap {
 
 var Layout *template.Template
 
-func CompileTemplate(domain *gettext.Domain, templateName string) *template.Template {
+func CompileTemplate(base string, domain *gettext.Domain, templateName string) *template.Template {
 	if Layout == nil {
 		Layout = template.New("")
 		Layout = Layout.Funcs(FuncMap(domain))
 		Layout = template.Must(Layout.ParseFiles(
-			"public/base.html",
-			"public/torbutton.html",
+			path.Join(base, "public/base.html"),
+			path.Join(base, "public/torbutton.html"),
 		))
 	}
 	l, err := Layout.Clone()
 	if err != nil {
 		log.Fatal(err)
 	}
-	return template.Must(l.ParseFiles("public/" + templateName))
+	return template.Must(l.ParseFiles(path.Join(base, "public/", templateName)))
 }
 
 type locale struct {
@@ -94,7 +95,7 @@ type locale struct {
 	Name string
 }
 
-func GetLocaleList() map[string]string {
+func GetLocaleList(base string) map[string]string {
 	// TODO: This should be it's own translation file
 	haveTranslatedNames := map[string]string{
 		"ar":    "&#1593;&#1585;&#1576;&#1610;&#1577;&nbsp;(Arabiya)",
@@ -127,17 +128,17 @@ func GetLocaleList() map[string]string {
 
 	// for all folders in locale which match a locale from https://www.transifex.com/api/2/languages/
 	// use the language name unless we have an override
-	webLocales, err := FetchTranslationLocales()
+	webLocales, err := FetchTranslationLocales(base)
 	if err != nil {
 		log.Printf("Failed to get up to date language list, using fallback.")
 		return haveTranslatedNames
 	}
 
-	return GetInstalledLocales(webLocales, haveTranslatedNames)
+	return GetInstalledLocales(base, webLocales, haveTranslatedNames)
 }
 
-func FetchTranslationLocales() (map[string]locale, error) {
-	file, err := os.Open(os.ExpandEnv("${TORCHECKBASE}data/langs"))
+func FetchTranslationLocales(base string) (map[string]locale, error) {
+	file, err := os.Open(path.Join(base, "data/langs"))
 	if err != nil {
 		return nil, err
 	}
@@ -164,8 +165,8 @@ func FetchTranslationLocales() (map[string]locale, error) {
 }
 
 // Get a list of all languages installed in our locale folder with translations if available
-func GetInstalledLocales(webLocales map[string]locale, nameTranslations map[string]string) map[string]string {
-	localFiles, err := ioutil.ReadDir(os.ExpandEnv("${TORCHECKBASE}locale"))
+func GetInstalledLocales(base string, webLocales map[string]locale, nameTranslations map[string]string) map[string]string {
+	localFiles, err := ioutil.ReadDir(path.Join(base, "locale"))
 
 	if err != nil {
 		log.Print("No locales found in 'locale'. Try running 'make i18n'.")

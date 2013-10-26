@@ -183,7 +183,7 @@ func TestPastHours(t *testing.T) {
 
 func BenchmarkIsTor(b *testing.B) {
 	e := new(Exits)
-	e.LoadFromFile(false)
+	e.LoadFromFile("data/exit-policies", false)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		e.IsTor("91.121.43.80")
@@ -193,7 +193,7 @@ func BenchmarkIsTor(b *testing.B) {
 
 func BenchmarkDumpList(b *testing.B) {
 	e := new(Exits)
-	e.LoadFromFile(false)
+	e.LoadFromFile("data/exit-policies", false)
 	buf := new(bytes.Buffer)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

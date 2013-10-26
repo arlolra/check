@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-var Locales = GetLocaleList()
-
 // page model
 type Page struct {
 	IsTor       bool
@@ -27,7 +25,7 @@ type Page struct {
 	Locales     map[string]string
 }
 
-func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain, Phttp *http.ServeMux) http.HandlerFunc {
+func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain, Phttp *http.ServeMux, Locales map[string]string) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 

@@ -182,8 +182,8 @@ func (e *Exits) Load(source io.Reader, update bool) error {
 	return nil
 }
 
-func (e *Exits) LoadFromFile(update bool) {
-	file, err := os.Open(os.ExpandEnv("${TORCHECKBASE}data/exit-policies"))
+func (e *Exits) LoadFromFile(filePath string, update bool) {
+	file, err := os.Open(os.ExpandEnv(filePath))
 	defer file.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -193,15 +193,15 @@ func (e *Exits) LoadFromFile(update bool) {
 	}
 }
 
-func (e *Exits) Run() {
+func (e *Exits) Run(filePath string) {
 	e.ReloadChan = make(chan os.Signal, 1)
 	signal.Notify(e.ReloadChan, syscall.SIGUSR2)
 	go func() {
 		for {
 			<-e.ReloadChan
-			e.LoadFromFile(true)
+			e.LoadFromFile(filePath, true)
 			log.Println("Exit list updated.")
 		}
 	}()
-	e.LoadFromFile(false)
+	e.LoadFromFile(filePath, false)
 }
