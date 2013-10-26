@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 start: data/exit-policies data/langs i18n
 	@./check
 
