@@ -41,9 +41,12 @@ data/cached-descriptors: descriptors
 	find data/descriptors -type f -mmin -60 | xargs cat > data/cached-descriptors
 	@echo "Done"
 
+descriptors_cutoff = $(shell date -u -v-1H -v-30M "+%Y/%m/%d %H:%M:%S")
 descriptors: data/descriptors/
+	@echo "Removing old descriptors"
+	@rm -r ./data/descriptors
 	@echo "Getting latest descriptors (This may take a while)"
-	@rsync -avz $(rsync_server)::$(descriptors_dir) --delete ./data/descriptors/
+	@rsync $(rsync_server)::$(descriptors_dir) | awk 'BEGIN { before="$(descriptors_cutoff)"; } before < ($$3 " " $$4) && ($$5!=".") {print $$5}' | rsync -avz --files-from=- $(rsync_server)::$(descriptors_dir) --delete ./data/descriptors/
 	@echo Done
 
 data/langs: data/
