@@ -49,15 +49,15 @@ Then setup a cron job to run a script like `scripts/cpexits.sh` every hour. Sett
 Assuming debian, install the dependencies,
 
     apt-get install git golang gettext python-dateutil python-stem
-		go get github.com/samuel/go-gettext/gettext
+    go get github.com/samuel/go-gettext/gettext
 
 The cron job and init script assume a base directory of `/opt/check`.
 
     git clone https://git.torproject.org/check.git /opt/check
-		cd /opt/check
-		make i18n
-		make exits
-		make install
+    cd /opt/check
+    make i18n
+    make exits
+    make install
 
 Then you start it up,
 
