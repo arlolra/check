@@ -1,6 +1,7 @@
 /public/exit-addresses
 /data
 /check.pid
+/check.log
 /check
 /locale
 /vagrant
