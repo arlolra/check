@@ -94,7 +94,7 @@ func BulkHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 
 		ip := q.Get("ip")
 		if net.ParseIP(ip) == nil {
-			WriteHTMLBuf(w, r, Layout, domain, "bulk.html", Page{})
+			WriteHTMLBuf(w, r, Layout, domain, "bulk.html", Page{Lang: "en"})
 			return
 		}
 

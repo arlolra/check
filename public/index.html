@@ -1,5 +1,4 @@
 {{ template "base.html" . }}
-{{ define "lang" }}{{ .Lang }}{{ end }}
 {{ define "title" }}{{ GetText .Lang "Are you using Tor?" }}{{ end }}
 {{ define "head" }}
 <form action="/" method="get" id="lang">
