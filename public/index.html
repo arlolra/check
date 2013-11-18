@@ -11,7 +11,7 @@
       <option value="{{ $k }}" {{ if Equal $k $out.Lang }}selected="selected"{{ end }}>{{ $i | UnEscaped }}</option>
     {{ end }}
   </select>
-  <input type="submit" value="Go" />
+  <input type="submit" value="{{ GetText .Lang "Go" }}" />
 </form>
 {{ end }}
 {{ define "body" }}

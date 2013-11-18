@@ -65,3 +65,6 @@ msgstr ""
 
 msgid "Learn More &raquo;"
 msgstr ""
+
+msgid "Go"
+msgstr ""
