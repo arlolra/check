@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -89,6 +90,8 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 
 func BulkHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain) http.HandlerFunc {
 
+	ApiPath := regexp.MustCompile("^/api/")
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 
@@ -103,12 +106,17 @@ func BulkHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 
 		w.Header().Set("Last-Modified", Exits.UpdateTime.UTC().Format(http.TimeFormat))
 
-		str := fmt.Sprintf("# This is a list of all Tor exit nodes from the past %d hours that can contact %s on port %d #\n", n, ip, port)
-		str += fmt.Sprintf("# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%s%s #\n", ip, port_str, n_str)
-		str += fmt.Sprintf("# This file was generated on %v #\n", Exits.UpdateTime.UTC().Format(time.UnixDate))
-		fmt.Fprintf(w, str)
+		if q.Get("format") == "json" || ApiPath.MatchString(r.URL.Path) {
+			w.Header().Set("Content-Type", "application/json")
+			Exits.DumpJSON(w, n, ip, port)
+		} else {
+			str := fmt.Sprintf("# This is a list of all Tor exit nodes from the past %d hours that can contact %s on port %d #\n", n, ip, port)
+			str += fmt.Sprintf("# You can update this list by visiting https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=%s%s%s #\n", ip, port_str, n_str)
+			str += fmt.Sprintf("# This file was generated on %v #\n", Exits.UpdateTime.UTC().Format(time.UnixDate))
+			fmt.Fprintf(w, str)
+			Exits.Dump(w, n, ip, port)
+		}
 
-		Exits.Dump(w, n, ip, port)
 	}
 
 }

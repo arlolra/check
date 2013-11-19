@@ -84,6 +84,19 @@ func (p PolicyList) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
 
+type ExitInfo struct {
+	Address     string
+	Fingerprint string
+}
+
+func (e ExitInfo) toJSON() (b []byte) {
+	j, err := json.MarshalIndent(e, "", "  ")
+	if err != nil {
+		return
+	}
+	return j
+}
+
 type Exits struct {
 	List        PolicyList
 	UpdateTime  time.Time
@@ -93,15 +106,30 @@ type Exits struct {
 
 func (e *Exits) Dump(w io.Writer, tminus int, ip string, port int) {
 	ap := AddressPort{ip, port}
-	e.GetAllExits(ap, tminus, func(exit string, _ string) {
+	e.GetAllExits(ap, tminus, func(exit string, _ string, _ int) {
 		w.Write([]byte(exit + "\n"))
 	})
 }
 
-func (e *Exits) GetAllExits(ap AddressPort, tminus int, fn func(string, string)) {
+func (e *Exits) DumpJSON(w io.Writer, tminus int, ip string, port int) {
+	ap := AddressPort{ip, port}
+	Prefix := []byte(",\n")
+	w.Write([]byte("["))
+	e.GetAllExits(ap, tminus, func(address string, fingerprint string, ind int) {
+		if ind > 0 {
+			w.Write(Prefix)
+		}
+		w.Write(ExitInfo{address, fingerprint}.toJSON())
+	})
+	w.Write([]byte("]"))
+}
+
+func (e *Exits) GetAllExits(ap AddressPort, tminus int, fn func(string, string, int)) {
+	ind := 0
 	for _, val := range e.List {
 		if val.Tminus <= tminus && val.CanExit(ap) {
-			fn(val.Address, val.Fingerprint)
+			fn(val.Address, val.Fingerprint, ind)
+			ind += 1
 		}
 	}
 }
@@ -110,7 +138,7 @@ var DefaultTarget = AddressPort{"38.229.70.31", 443}
 
 func (e *Exits) PreComputeTorList() {
 	newmap := make(map[string]string)
-	e.GetAllExits(DefaultTarget, 16, func(ip string, fingerprint string) {
+	e.GetAllExits(DefaultTarget, 16, func(ip string, fingerprint string, _ int) {
 		newmap[ip] = fingerprint
 	})
 	e.IsTorLookup = newmap
