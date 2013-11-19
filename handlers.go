@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+	"strings"
 )
 
 // page model
@@ -44,7 +45,11 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 
 		// get remote ip
 		host := r.Header.Get("X-Forwarded-For")
-		if len(host) == 0 {
+		if len(host) > 0 {
+			parts := strings.Split(host, ",")
+			// apache will append the remote address
+			host = strings.TrimSpace(parts[len(parts) - 1]) 
+		} else {
 			host, _, err = net.SplitHostPort(r.RemoteAddr)
 		}
 
