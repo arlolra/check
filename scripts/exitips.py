@@ -20,6 +20,7 @@ class Router():
         self.Fingerprint = router.fingerprint
         self.Address = router.address
         self.IsAllowedDefault = router.exit_policy._is_allowed_default
+        self.IsAllowed = router.exit_policy.is_exiting_allowed()
         self.Rules = []
         self.Tminus = tminus
 
@@ -51,8 +52,8 @@ def main(consensuses, exit_lists):
                                  "network-status-consensus-3 1.0"):
             if router.fingerprint in exits:
                 continue
-            if router.exit_policy.is_exiting_allowed():
-                r = Router(router, t)
+            r = Router(router, t)
+            if r.IsAllowed:
                 for x in router.exit_policy._get_rules():
                     r.Rules.append({
                         "IsAddressWildcard": True,
@@ -62,7 +63,7 @@ def main(consensuses, exit_lists):
                         "MinPort": x.min_port,
                         "MaxPort": x.max_port
                     })
-                exits[router.fingerprint] = r
+            exits[router.fingerprint] = r
 
         # get a corresponding exit list
         m = [x for x in exit_lists if x.startswith(d[:-5])]
@@ -82,31 +83,35 @@ def main(consensuses, exit_lists):
     for descriptor in parse_file("data/cached-descriptors",
                                  "server-descriptor 1.0"):
         if descriptor.fingerprint in exits:
-            rules = []
-            for x in descriptor.exit_policy._get_rules():
-                is_address_wildcard = x.is_address_wildcard()
-                mask = ""
-                if not is_address_wildcard:
-                    address_type = x.get_address_type()
-                    if (address_type == AddressType.IPv4 and
-                        x._masked_bits != 32) or \
-                        (address_type == AddressType.IPv6 and
-                            x._masked_bits != 128):
-                        mask = x.get_mask()
-                rules.append({
-                    "IsAddressWildcard": is_address_wildcard,
-                    "Address": "" if x.address is None else x.address,
-                    "Mask": "" if mask is None else mask,
-                    "IsAccept": x.is_accept,
-                    "MinPort": x.min_port,
-                    "MaxPort": x.max_port
-                })
-            exits[descriptor.fingerprint].Rules = rules
+            r = exits[descriptor.fingerprint]
+            r.IsAllowed = descriptor.exit_policy.is_exiting_allowed()
+            if r.IsAllowed:
+                rules = []
+                for x in descriptor.exit_policy._get_rules():
+                    is_address_wildcard = x.is_address_wildcard()
+                    mask = ""
+                    if not is_address_wildcard:
+                        address_type = x.get_address_type()
+                        if (address_type == AddressType.IPv4 and
+                            x._masked_bits != 32) or \
+                            (address_type == AddressType.IPv6 and
+                                x._masked_bits != 128):
+                            mask = x.get_mask()
+                    rules.append({
+                        "IsAddressWildcard": is_address_wildcard,
+                        "Address": "" if x.address is None else x.address,
+                        "Mask": "" if mask is None else mask,
+                        "IsAccept": x.is_accept,
+                        "MinPort": x.min_port,
+                        "MaxPort": x.max_port
+                    })
+                r.Rules = rules
 
     # output exits to file
     with open("data/exit-policies", "w") as exit_file:
         for e in exits:
-            exit_file.write(json.dumps(exits[e].__dict__) + "\n")
+            if exits[e].IsAllowed:
+                exit_file.write(json.dumps(exits[e].__dict__) + "\n")
 
 
 def print_help(c):
