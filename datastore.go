@@ -134,7 +134,7 @@ func (e *Exits) GetAllExits(ap AddressPort, tminus int, fn func(string, string, 
 	}
 }
 
-var DefaultTarget = AddressPort{"38.229.70.31", 443}
+var DefaultTarget = AddressPort{"38.229.72.22", 443}
 
 func (e *Exits) PreComputeTorList() {
 	newmap := make(map[string]string)
