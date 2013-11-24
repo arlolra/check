@@ -18,7 +18,7 @@ from stem.exit_policy import AddressType
 class Router():
     def __init__(self, router, tminus):
         self.Fingerprint = router.fingerprint
-        self.Address = router.address
+        self.Address = [router.address]
         self.IsAllowedDefault = router.exit_policy._is_allowed_default
         self.IsAllowed = router.exit_policy.is_exiting_allowed()
         self.Rules = []
@@ -73,11 +73,13 @@ def main(consensuses, exit_lists):
         # update exit addresses with data from TorDNSEL
         for descriptor in parse_file("data/exit-lists/" + m[0],
                                      "tordnsel 1.0"):
-            descriptor.exit_addresses.sort(key=operator.itemgetter(1),
-                                           reverse=True)
             e = exits.get(descriptor.fingerprint, None)
-            if e is not None and e.Tminus == t:
-                e.Address = descriptor.exit_addresses[0][0]
+            if e is not None:
+                if e.Tminus == t:
+                    e.Address = []
+                for a in descriptor.exit_addresses:
+                    if a[0] not in e.Address:
+                        e.Address.append(a[0])
 
     # update all with server descriptor info
     for descriptor in parse_file("data/cached-descriptors",

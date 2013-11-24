@@ -50,27 +50,51 @@ type AddressPort struct {
 	Port    int
 }
 
+type CanExitCache struct {
+	ap  AddressPort
+	can bool
+}
+
 type Policy struct {
 	Fingerprint      string
-	Address          string
+	Address          []string
 	Rules            []Rule
 	IsAllowedDefault bool
 	Tminus           int
+	CacheLast        CanExitCache
 }
 
-func (p Policy) CanExit(ap AddressPort) bool {
+func (p Policy) CanExit(ap AddressPort) (can bool) {
+	if p.CacheLast.ap == ap {
+		can = p.CacheLast.can
+		return
+	}
+
+	// update the cache *after* we return
+	defer func() {
+		p.CacheLast = CanExitCache{ap, can}
+	}()
+
 	addr := net.ParseIP(ap.Address)
 	if addr != nil && ValidPort(ap.Port) {
 		for _, rule := range p.Rules {
 			if rule.IsMatch(addr, ap.Port) {
-				return rule.IsAccept
+				can = rule.IsAccept
+				return
 			}
 		}
 	}
-	return p.IsAllowedDefault
+
+	can = p.IsAllowedDefault
+	return
 }
 
-type PolicyList []Policy
+type PolicyAddress struct {
+	Policy  Policy
+	Address string
+}
+
+type PolicyList []PolicyAddress
 
 func (p PolicyList) Less(i, j int) bool {
 	return p[i].Address < p[j].Address
@@ -127,8 +151,8 @@ func (e *Exits) DumpJSON(w io.Writer, tminus int, ip string, port int) {
 func (e *Exits) GetAllExits(ap AddressPort, tminus int, fn func(string, string, int)) {
 	ind := 0
 	for _, val := range e.List {
-		if val.Tminus <= tminus && val.CanExit(ap) {
-			fn(val.Address, val.Fingerprint, ind)
+		if val.Policy.Tminus <= tminus && val.Policy.CanExit(ap) {
+			fn(val.Address, val.Policy.Fingerprint, ind)
 			ind += 1
 		}
 	}
@@ -149,29 +173,53 @@ func (e *Exits) IsTor(remoteAddr string) (fingerprint string, ok bool) {
 	return
 }
 
-func (e *Exits) Update(exits PolicyList) PolicyList {
+func InsertUnique(arr *[]string, a string) {
+	for _, b := range *arr {
+		if a == b {
+			return
+		}
+	}
+	*arr = append(*arr, a)
+}
+
+func (e *Exits) Update(exits []Policy, update bool) {
 	m := make(map[string]Policy)
 
-	for _, p := range e.List {
-		p.Tminus = p.Tminus + 1
-		m[p.Fingerprint] = p
+	// bump entries by an hour that aren't in the new exit list
+	if update {
+		for _, p := range e.List {
+			if _, ok := m[p.Policy.Fingerprint]; !ok {
+				p.Policy.Tminus = p.Policy.Tminus + 1
+				m[p.Policy.Fingerprint] = p.Policy
+			}
+		}
 	}
 
+	// keep all unique ips we've seen
 	for _, p := range exits {
+		if q, ok := m[p.Fingerprint]; ok {
+			for _, a := range q.Address {
+				InsertUnique(&p.Address, a)
+			}
+		}
 		m[p.Fingerprint] = p
 	}
 
-	i := 0
-	exits = make(PolicyList, len(m))
+	var pl PolicyList
 	for _, p := range m {
-		exits[i] = p
-		i = i + 1
+		for _, a := range p.Address {
+			pl = append(pl, PolicyAddress{p, a})
+		}
 	}
-	return exits
+
+	// sort -n
+	sort.Sort(pl)
+
+	e.List = pl
 }
 
 func (e *Exits) Load(source io.Reader, update bool) error {
-	var exits PolicyList
+	var exits []Policy
 	dec := json.NewDecoder(source)
 
 	for {
@@ -195,18 +243,9 @@ func (e *Exits) Load(source io.Reader, update bool) error {
 		exits = append(exits, p)
 	}
 
-	// bump entries by an hour that aren't in this list
-	if update {
-		exits = e.Update(exits)
-	}
-
-	// sort -n
-	sort.Sort(exits)
-
-	e.List = exits
+	e.Update(exits, update)
 	e.UpdateTime = time.Now()
 	e.PreComputeTorList()
-
 	return nil
 }
 

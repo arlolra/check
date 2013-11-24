@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 )
 
 // page model
@@ -48,7 +48,7 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 		if len(host) > 0 {
 			parts := strings.Split(host, ",")
 			// apache will append the remote address
-			host = strings.TrimSpace(parts[len(parts) - 1]) 
+			host = strings.TrimSpace(parts[len(parts)-1])
 		} else {
 			host, _, err = net.SplitHostPort(r.RemoteAddr)
 		}
