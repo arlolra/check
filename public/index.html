@@ -50,12 +50,18 @@
 {{ end }}
 {{ define "foot" }}
 <p id="js">
-  <script>document.getElementById("js").textContent = "{{ GetText .Lang "JavaScript is enabled." }}";</script>
+  <script>
+    // javascript enabled?
+    var a = document.createElement("a");
+    a.href = "https://www.torproject.org/docs/faq#TBBJavaScriptEnabled";
+    var c = document.createTextNode("{{ GetText .Lang "JavaScript is enabled." }}");
+    a.appendChild(c);
+    document.getElementById("js").appendChild(a);
+    // change language
+    document.getElementById("cl").addEventListener("change", function () {
+      document.getElementById("lang").submit();
+    });
+  </script>
   <noscript>{{ GetText .Lang "JavaScript is disabled." }}</noscript>
 </p>
-<script>
-  document.getElementById("cl").addEventListener("change", function () {
-    document.getElementById("lang").submit();
-  });
-</script>
 {{ end }}
