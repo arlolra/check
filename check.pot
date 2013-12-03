@@ -80,3 +80,9 @@ msgstr ""
 
 msgid "Questions and answers site for researchers, developers, and users of Tor. Hosted on StackExchange. Currently only available in English."
 msgstr ""
+
+msgid "JavaScript is enabled."
+msgstr ""
+
+msgid "JavaScript is disabled."
+msgstr ""

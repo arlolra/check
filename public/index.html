@@ -50,6 +50,10 @@
   </div>
 {{ end }}
 {{ define "foot" }}
+<p id="js">
+  <script>document.getElementById("js").textContent = "JavaScript is enabled.";</script>
+  <noscript>JavaScript is disabled.</noscript>
+</p>
 <script>
   document.getElementById("cl").addEventListener("change", function () {
     document.getElementById("lang").submit();
