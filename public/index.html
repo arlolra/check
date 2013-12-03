@@ -34,8 +34,7 @@
   {{ end }}
   <p class="mid">
     {{ if .IsTor }}
-      {{ GetText .Lang "Please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> for further information about using Tor safely.  You are now free to browse the Internet anonymously." | UnEscaped }}
-      <br />{{ GetText .Lang "For more information about this exit relay, see:" }} <a href="https://atlas.torproject.org/#details/{{ .Fingerprint }}">Atlas</a>.
+      {{ GetText .Lang "Please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> for further information about using Tor safely.  You are now free to browse the Internet anonymously." | UnEscaped }} {{ GetText .Lang "For more information about this exit relay, see:" }} <a href="https://atlas.torproject.org/#details/{{ .Fingerprint }}">Atlas</a>.
     {{ else }}
       {{ GetText .Lang "If you are attempting to use a Tor client, please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> and specifically the <a href=\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for configuring your Tor client</a>." | UnEscaped }}
     {{ end }}
