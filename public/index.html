@@ -40,6 +40,14 @@
       {{ GetText .Lang "If you are attempting to use a Tor client, please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> and specifically the <a href=\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for configuring your Tor client</a>." | UnEscaped }}
     {{ end }}
   </p>
+  <div class="other">
+    <p><a href="https://torproject.org/dist/manual/short-user-manual_{{ UserManual .Lang }}.xhtml">{{ GetText .Lang "Short User Manual" }}</a>
+    {{ GetText .Lang "The short user manual contains information about how to download Tor, how to use it, and what to do if Tor is unable to connect to the network." }}</p>
+  </div>
+  <div class="other">
+    <p><a href="http://tor.stackexchange.com/">{{ GetText .Lang "Tor Q&A Site" }}</a>
+    {{ GetText .Lang "Questions and answers site for researchers, developers, and users of Tor. Hosted on StackExchange. Currently only available in English." }}</p>
+  </div>
 {{ end }}
 {{ define "foot" }}
 <script>

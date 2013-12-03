@@ -68,3 +68,15 @@ msgstr ""
 
 msgid "Go"
 msgstr ""
+
+msgid "Short User Manual"
+msgstr ""
+
+msgid "The short user manual contains information about how to download Tor, how to use it, and what to do if Tor is unable to connect to the network."
+msgstr ""
+
+msgid "Tor Q&A Site"
+msgstr ""
+
+msgid "Questions and answers site for researchers, developers, and users of Tor. Hosted on StackExchange. Currently only available in English."
+msgstr ""

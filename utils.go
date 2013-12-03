@@ -49,6 +49,29 @@ func GetQS(q url.Values, param string, deflt int) (num int, str string) {
 	return
 }
 
+var HaveManual = map[string]bool{
+	"ar":    true,
+	"zh_CN": true,
+	"cs":    true,
+	"nl":    true,
+	"en":    true,
+	"fa":    true,
+	"fr":    true,
+	"de":    true,
+	"el":    true,
+	"hu":    true,
+	"it":    true,
+	"ja":    true,
+	"lv":    true,
+	"nb":    true,
+	"pl":    true,
+	"pt_BR": true,
+	"ru":    true,
+	"es":    true,
+	"sv":    true,
+	"tr":    true,
+}
+
 func FuncMap(domain *gettext.Domain) template.FuncMap {
 	return template.FuncMap{
 		"UnEscaped": func(x string) interface{} {
@@ -68,6 +91,12 @@ func FuncMap(domain *gettext.Domain) template.FuncMap {
 		},
 		"And": func(a bool, b bool) bool {
 			return a && b
+		},
+		"UserManual": func(lang string) string {
+			if _, ok := HaveManual[lang]; !ok {
+				lang = "en"
+			}
+			return lang
 		},
 	}
 }
