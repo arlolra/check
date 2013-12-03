@@ -51,8 +51,8 @@
 {{ end }}
 {{ define "foot" }}
 <p id="js">
-  <script>document.getElementById("js").textContent = "JavaScript is enabled.";</script>
-  <noscript>JavaScript is disabled.</noscript>
+  <script>document.getElementById("js").textContent = "{{ GetText .Lang "JavaScript is enabled." }}";</script>
+  <noscript>{{ GetText .Lang "JavaScript is disabled." }}</noscript>
 </p>
 <script>
   document.getElementById("cl").addEventListener("change", function () {
