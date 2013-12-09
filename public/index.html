@@ -1,5 +1,56 @@
 {{ template "base.html" . }}
 {{ define "title" }}{{ GetText .Lang "Are you using Tor?" }}{{ end }}
+{{ define "css" }}
+  .on { color: green; }
+  .off { color: red; }
+  .mid { margin: 3em 0; }
+  .mid a {
+    text-decoration: underline;
+  }
+  .small { font-size: 0.8em; }
+  .security {
+    margin: 2em 0;
+    padding: 1em;
+    font-size: 1.4em;
+    color: goldenrod;
+    background-color: ghostwhite;
+    border-radius: 5px;
+  }
+  .security a {
+    color: goldenrod;
+    text-decoration: underline;
+  }
+  .onion {
+    width: 128px;
+    height: 128px;
+    border: 0;
+    text-decoration: none;
+  }
+  #js {
+    font-size: 0.8em;
+  }
+  #donate {
+    background-color: dodgerblue;
+    color: white;
+    text-decoration: none;
+    font-size: 1.4em;
+    font-weight: bold;
+    padding: 0.6em 2.4em;
+    border-radius: 0.2em;
+    display: inline-block;
+  }
+  #links {
+    margin-top: 0.6em;
+  }
+  #links li:after {
+    content: "|";
+    padding: 0 0.2em;
+  }
+  #links li:last-child:after {
+    content: "";
+    padding: 0;
+  }
+{{ end }}
 {{ define "head" }}
 <form action="/" method="get" id="lang">
   {{ if .Small }}<input type="hidden" name="small" value="1" />{{ end }}
@@ -39,14 +90,16 @@
       {{ GetText .Lang "If you are attempting to use a Tor client, please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> and specifically the <a href=\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for configuring your Tor client</a>." | UnEscaped }}
     {{ end }}
   </p>
-  <div class="other">
-    <p><a href="https://torproject.org/dist/manual/short-user-manual_{{ UserManual .Lang }}.xhtml">{{ GetText .Lang "Short User Manual" }}</a>
-    {{ GetText .Lang "The short user manual contains information about how to download Tor, how to use it, and what to do if Tor is unable to connect to the network." }}</p>
-  </div>
-  <div class="other">
-    <p><a href="https://tor.stackexchange.com/">{{ GetText .Lang "Tor Q&A Site" }}</a>
-    {{ GetText .Lang "Questions and answers site for researchers, developers, and users of Tor. Hosted on StackExchange. Currently only available in English." }}</p>
-  </div>
+  <a id="donate" href="https://www.torproject.org/donate/donate.html">Donate to Support Tor</a>
+  <ul id="links">
+    <li>
+      <a href="https://torproject.org/dist/manual/short-user-manual_{{ UserManual .Lang }}.xhtml">{{ GetText .Lang "Short User Manual" }}</a>
+    </li><li>
+      <a href="https://tor.stackexchange.com/">{{ GetText .Lang "Tor Q&A Site" }}</a>
+    </li><li>
+      <a href="https://www.torproject.org/getinvolved/volunteer.html">{{ GetText .Lang "Volunteer" }}</a>
+    </li>
+  </ul>
 {{ end }}
 {{ define "foot" }}
 <p id="js">

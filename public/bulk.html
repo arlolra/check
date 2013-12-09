@@ -1,6 +1,12 @@
 {{ template "base.html" . }}
 {{ define "title" }}Bulk Tor Exit Exporter{{ end }}
 {{ define "head" }}{{ end }}
+{{ define "css" }}
+  .form {
+    display: inline;
+    margin-right: 0.4em;
+  }
+{{ end }}
 {{ define "body" }}
   <img src="/torcheck/img/tor-on.png" class="onion" />
   <h4>Welcome to the Tor Bulk Exit List exporting tool.</h4>
