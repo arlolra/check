@@ -44,6 +44,7 @@ The data that `make start` pulls in will quickly become stale. What you want to 
 
 Then setup a cron job to run a script like `scripts/cpexits.sh` every hour. Setting up TorDNSEL to get the exit addresses is beyond the scope of this readme.
 
+
 ## Setup
 
 Assuming debian, install the dependencies,
@@ -62,6 +63,11 @@ The cron job and init script assume a base directory of `/opt/check`.
 Then you start it up,
 
     /etc/init.d/check start
+
+## /exit-addresses
+
+The production check.tpo symlinks TorDNSEL's state file, `exit-addresses`,
+to its `DocumentRoot`. This is to replace what was formerly at exitlist.tpo
 
 ## Capacity planning
 

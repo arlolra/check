@@ -6,6 +6,9 @@
     display: inline;
     margin-right: 0.4em;
   }
+  .exli {
+      margin-top: 4em;
+  }
 {{ end }}
 {{ define "body" }}
   <img src="/torcheck/img/tor-on.png" class="onion" />
@@ -25,6 +28,8 @@
       <input type="submit" value="Submit" />
     </div>
   </form>
+
+  <p class="exli">Get the current list of <a href="/exit-addresses">exit addresses</a> outputted by TorDNSEL. Past data can be obtained from the <a href="https://metrics.torproject.org/data.html#exitlist">metrics archive</a>.</p>
 
 {{ end }}
 {{ define "foot" }}{{ end }}
