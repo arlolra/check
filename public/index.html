@@ -90,7 +90,7 @@
       {{ GetText .Lang "If you are attempting to use a Tor client, please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> and specifically the <a href=\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for configuring your Tor client</a>." | UnEscaped }}
     {{ end }}
   </p>
-  <a id="donate" href="https://www.torproject.org/donate/donate.html">Donate to Support Tor</a>
+  <a id="donate" href="https://www.torproject.org/donate/donate.html">{{ GetText .Lang "Donate to Support Tor" }}</a>
   <ul id="links">
     <li>
       <a href="https://torproject.org/dist/manual/short-user-manual_{{ UserManual .Lang }}.xhtml">{{ GetText .Lang "Short User Manual" }}</a>
