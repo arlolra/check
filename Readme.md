@@ -69,6 +69,14 @@ Then you start it up,
 The production check.tpo symlinks TorDNSEL's state file, `exit-addresses`,
 to its `DocumentRoot`. This is to replace what was formerly at exitlist.tpo
 
+## Translations
+
+Translations are maintained in [Transifex][1]. See Tor's
+[translation overview][2] to get involved.
+
+[1]: https://www.transifex.com/projects/p/torproject/resource/2-torcheck-torcheck-pot/
+[2]: https://www.torproject.org/getinvolved/translation-overview.html.en
+
 ## Capacity planning
 
 > 54.7 requests/sec - 47.0 kB/second - 879 B/request  
