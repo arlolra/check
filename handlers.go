@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/samuel/go-gettext/gettext"
 	"html/template"
@@ -11,7 +12,6 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -44,14 +44,7 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 		)
 
 		// get remote ip
-		host := r.Header.Get("X-Forwarded-For")
-		if len(host) > 0 {
-			parts := strings.Split(host, ",")
-			// apache will append the remote address
-			host = strings.TrimSpace(parts[len(parts)-1])
-		} else {
-			host, _, err = net.SplitHostPort(r.RemoteAddr)
-		}
+		host, err := GetHost(r)
 
 		// determine if we're in Tor
 		if err != nil {
@@ -91,6 +84,22 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 		WriteHTMLBuf(w, r, Layout, domain, "index.html", p)
 	}
 
+}
+
+type IPResp struct {
+	IsTor bool
+}
+
+func APIHandler(Exits *Exits) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		isTor := false
+		if host, err := GetHost(r); err == nil {
+			_, isTor = Exits.IsTor(host)
+		}
+		ip, _ := json.Marshal(IPResp{isTor})
+		w.Write(ip)
+	}
 }
 
 func BulkHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain) http.HandlerFunc {

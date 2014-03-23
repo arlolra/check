@@ -8,11 +8,13 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"strconv"
+	"strings"
 )
 
 func UpToDate(r *http.Request) bool {
@@ -45,6 +47,19 @@ func GetQS(q url.Values, param string, deflt int) (num int, str string) {
 		str = ""
 	} else {
 		str = fmt.Sprintf("&%s=%s", param, str)
+	}
+	return
+}
+
+func GetHost(r *http.Request) (host string, err error) {
+	// get remote ip
+	host = r.Header.Get("X-Forwarded-For")
+	if len(host) > 0 {
+		parts := strings.Split(host, ",")
+		// apache will append the remote address
+		host = strings.TrimSpace(parts[len(parts)-1])
+	} else {
+		host, _, err = net.SplitHostPort(r.RemoteAddr)
 	}
 	return
 }

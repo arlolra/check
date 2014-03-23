@@ -60,9 +60,10 @@ func main() {
 	// routes
 	http.HandleFunc("/", RootHandler(CompileTemplate(*basePath, domain, "index.html"), exits, domain, Phttp, Locales))
 	bulk := BulkHandler(CompileTemplate(*basePath, domain, "bulk.html"), exits, domain)
-	http.HandleFunc("/api/bulk", bulk)
 	http.HandleFunc("/torbulkexitlist", bulk)
 	http.HandleFunc("/cgi-bin/TorBulkExitList.py", bulk)
+	http.HandleFunc("/api/bulk", bulk)
+	http.HandleFunc("/api/ip", APIHandler(exits))
 
 	// start the server
 	log.Printf("Listening on port: %d\n", *port)
