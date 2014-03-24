@@ -40,16 +40,12 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 		var (
 			err         error
 			isTor       bool
+			host        string
+			onOff       string
 			fingerprint string
 		)
 
-		// get remote ip
-		host, err := GetHost(r)
-
-		// determine if we're in Tor
-		if err != nil {
-			isTor = false
-		} else {
+		if host, err = GetHost(r); err == nil {
 			fingerprint, isTor = Exits.IsTor(host)
 		}
 
@@ -61,7 +57,6 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 
 		// string used for classes and such
 		// in the template
-		var onOff string
 		if isTor {
 			onOff = "on"
 		} else {
@@ -86,14 +81,12 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 
 }
 
-type IPResp struct {
-	IsTor bool
-}
+type IPResp struct{ IsTor bool }
 
 func APIHandler(Exits *Exits) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		isTor := false
+		var isTor bool
 		if host, err := GetHost(r); err == nil {
 			_, isTor = Exits.IsTor(host)
 		}
