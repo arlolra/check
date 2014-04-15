@@ -142,6 +142,7 @@ type locale struct {
 func GetLocaleList(base string) map[string]string {
 	// populated from https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 	// and https://sites.google.com/site/opti365/translate_codes
+	// and https://en.wikipedia.org/w/api.php?action=sitematrix&format=json
 	haveTranslatedNames := map[string]string{
 		"af":    "Afrikaans",
 		"ar":    "العربية",
