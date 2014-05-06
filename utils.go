@@ -17,15 +17,8 @@ import (
 	"strings"
 )
 
-func UpToDate(r *http.Request) bool {
-	if r.URL.Query().Get("uptodate") == "0" {
-		return false
-	}
-	return true
-}
-
-func Small(r *http.Request) bool {
-	if len(r.URL.Query().Get("small")) > 0 {
+func IsParamSet(r *http.Request, param string) bool {
+	if len(r.URL.Query().Get(param)) > 0 {
 		return true
 	}
 	return false

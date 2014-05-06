@@ -50,7 +50,7 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 		}
 
 		// short circuit for torbutton
-		if len(r.URL.Query().Get("TorButton")) > 0 {
+		if IsParamSet(r, "TorButton") {
 			WriteHTMLBuf(w, r, Layout, domain, "torbutton.html", Page{IsTor: isTor})
 			return
 		}
@@ -66,8 +66,8 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 		// instance of your page model
 		p := Page{
 			isTor,
-			!UpToDate(r),
-			Small(r),
+			IsParamSet(r, "uptodate"),
+			IsParamSet(r, "small"),
 			fingerprint,
 			onOff,
 			Lang(r),
