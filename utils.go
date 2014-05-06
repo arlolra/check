@@ -13,15 +13,13 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
 func IsParamSet(r *http.Request, param string) bool {
-	if len(r.URL.Query().Get(param)) > 0 {
-		return true
-	}
-	return false
+	return len(r.URL.Query().Get(param)) > 0
 }
 
 func Lang(r *http.Request) string {
@@ -57,15 +55,10 @@ func GetHost(r *http.Request) (host string, err error) {
 	return
 }
 
-var TBBUserAgents = map[string]bool{
-	"Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0": true,
-	"Mozilla/5.0 (Windows NT 6.1; rv:17.0) Gecko/20100101 Firefox/17.0": true,
-	"Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/24.0": true,
-}
+var TBBUserAgents = regexp.MustCompile(`^Mozilla/5\.0 \(Windows NT 6\.1; rv:[\d]+\.0\) Gecko/20100101 Firefox/[\d]+\.0$`)
 
 func LikelyTBB(ua string) bool {
-	_, ok := TBBUserAgents[ua]
-	return ok
+	return TBBUserAgents.MatchString(ua)
 }
 
 var HaveManual = map[string]bool{
