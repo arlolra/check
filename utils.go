@@ -66,25 +66,25 @@ func GetHost(r *http.Request) (host string, err error) {
 
 var HaveManual = map[string]bool{
 	"ar":    true,
-	"zh_CN": true,
 	"cs":    true,
-	"nl":    true,
-	"en":    true,
-	"fa":    true,
-	"fr":    true,
 	"de":    true,
 	"el":    true,
+	"en":    true,
+	"es":    true,
+	"fa":    true,
+	"fr":    true,
 	"hu":    true,
 	"it":    true,
 	"ja":    true,
 	"lv":    true,
 	"nb":    true,
+	"nl":    true,
 	"pl":    true,
 	"pt_BR": true,
 	"ru":    true,
-	"es":    true,
 	"sv":    true,
 	"tr":    true,
+	"zh_CN": true,
 }
 
 func FuncMap(domain *gettext.Domain) template.FuncMap {
