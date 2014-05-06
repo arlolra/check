@@ -3,6 +3,7 @@
 {{ define "css" }}
   .on { color: green; }
   .off { color: red; }
+  .not { color: goldenrod; }
   .mid { margin: 3em 0; }
   .mid a {
     text-decoration: underline;
@@ -77,11 +78,20 @@
     {{ end }}
   </h1>
   <p>{{ GetText .Lang "Your IP address appears to be: " }} <strong>{{ .IP }}</strong></p>
-  {{ if And .IsTor .NotUpToDate }}
-    <p class="security">
-      {{ GetText .Lang "There is a security update available for the Tor Browser Bundle." }}<br />
-      {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}
-    </p>
+  {{ if .IsTor }}
+      {{ if .NotUpToDate }}
+        <p class="security">
+          {{ GetText .Lang "There is a security update available for the Tor Browser Bundle." }}<br />
+          {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}
+        </p>
+      {{ else }}
+        {{ if .NotTBB }}
+          <p class="security">
+            {{ GetText .Lang "However, it does not appear to be the Tor Browser Bundle." }}<br />
+            {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}
+          </p>
+        {{ end }}
+      {{ end }}
   {{ end }}
   <p class="mid">
     {{ if .IsTor }}

@@ -86,3 +86,6 @@ msgstr ""
 
 msgid "JavaScript is disabled."
 msgstr ""
+
+msgid "However, it does not appear to be the Tor Browser Bundle."
+msgstr ""

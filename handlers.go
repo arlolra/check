@@ -20,6 +20,7 @@ type Page struct {
 	IsTor       bool
 	NotUpToDate bool
 	Small       bool
+	NotTBB      bool
 	Fingerprint string
 	OnOff       string
 	Lang        string
@@ -55,10 +56,22 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 			return
 		}
 
+		// try to determine if it's TBB
+		notTBB := !LikelyTBB(r.UserAgent())
+
+		// users shouldn't be relying on check
+		// to determine the TBB is up-to-date
+		// always return false to this param
+		notUpToDate := IsParamSet(r, "uptodate")
+
 		// string used for classes and such
 		// in the template
 		if isTor {
-			onOff = "on"
+			if notTBB || notUpToDate {
+				onOff = "not"
+			} else {
+				onOff = "on"
+			}
 		} else {
 			onOff = "off"
 		}
@@ -66,8 +79,9 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 		// instance of your page model
 		p := Page{
 			isTor,
-			IsParamSet(r, "uptodate"),
+			notUpToDate,
 			IsParamSet(r, "small"),
+			notTBB,
 			fingerprint,
 			onOff,
 			Lang(r),
