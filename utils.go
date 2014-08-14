@@ -182,6 +182,7 @@ func GetLocaleList(base string) map[string]string {
 		"nb":          "Norsk bokmål",
 		"nl":          "Nederlands",
 		"nl_BE":       "Vlaams",
+		"nn":          "Norsk nynorsk",
 		"pa":          "ਪੰਜਾਬੀ",
 		"pl":          "Język polski",
 		"pl_PL":       "Język polski (Poland)",
