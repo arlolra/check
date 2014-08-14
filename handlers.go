@@ -95,16 +95,23 @@ func RootHandler(Layout *template.Template, Exits *Exits, domain *gettext.Domain
 
 }
 
-type IPResp struct{ IsTor bool }
+type IPResp struct {
+	IsTor bool
+	IP    string
+}
 
 func APIHandler(Exits *Exits) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		var isTor bool
-		if host, err := GetHost(r); err == nil {
+		var (
+			err   error
+			isTor bool
+			host  string
+		)
+		if host, err = GetHost(r); err == nil {
 			_, isTor = Exits.IsTor(host)
 		}
-		ip, _ := json.Marshal(IPResp{isTor})
+		ip, _ := json.Marshal(IPResp{isTor, host})
 		w.Write(ip)
 	}
 }
