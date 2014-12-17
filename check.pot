@@ -60,7 +60,9 @@ msgstr ""
 msgid "For more information about this exit relay, see:"
 msgstr ""
 
-msgid "The Tor Project is a US 501(c)(3) non-profit dedicated to the research, development, and education of online anonymity and privacy."
+msgid ""
+"The Tor Project is a US 501(c)(3) non-profit dedicated to the research, "
+"development, and education of online anonymity and privacy."
 msgstr ""
 
 msgid "Learn More &raquo;"
@@ -88,4 +90,10 @@ msgid "JavaScript is disabled."
 msgstr ""
 
 msgid "However, it does not appear to be the Tor Browser Bundle."
+msgstr ""
+
+msgid "Run a Relay"
+msgstr ""
+
+msgid "Stay Anonymous"
 msgstr ""
