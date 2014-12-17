@@ -175,6 +175,7 @@ func GetLocaleList(base string) map[string]string {
 		"kn":          "ಕನ್ನಡ",
 		"ko":          "한국어",
 		"ko_KR":       "한국어 (South Korea)",
+		"lo":          "ລາວ",
 		"lv":          "Latviešu valoda",
 		"mk":          "македонски јазик",
 		"ms_MY":       "Bahasa Melayu",
