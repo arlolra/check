@@ -22,7 +22,7 @@ msgid ""
 "the Internet anonymously."
 msgstr ""
 
-msgid "There is a security update available for the Tor Browser Bundle."
+msgid "There is a security update available for Tor Browser."
 msgstr ""
 
 msgid ""
@@ -89,7 +89,7 @@ msgstr ""
 msgid "JavaScript is disabled."
 msgstr ""
 
-msgid "However, it does not appear to be the Tor Browser Bundle."
+msgid "However, it does not appear to be Tor Browser."
 msgstr ""
 
 msgid "Run a Relay"
