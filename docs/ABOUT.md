@@ -1,6 +1,6 @@
 ## What is check.torproject.org?
 
-The core service is a website that allows a user to check if their connection seems to be a [Tor](https://www.torproject.org/) connection or not. This allows the user to know if they have successfully setup their client and are ready to browse the internet privately. It is the default homepage for users of the [Tor Browser Bundle (TBB)](https://www.torproject.org/projects/torbrowser.html.en) for versions below 3.X.
+The core service is a website that allows a user to check if their connection seems to be a [Tor](https://www.torproject.org/) connection or not. This allows the user to know if they have successfully setup their client and are ready to browse the internet privately. It is the default homepage for users of the [Tor Browser Bundle (TBB)](https://www.torproject.org/projects/torbrowser.html.en) for versions below 3.X and for [the Guardian Project](https://guardianproject.info)'s Orweb.
 
 Users of the TBB will also receive a notification if there are updates available for their software.
 
