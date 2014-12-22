@@ -81,13 +81,13 @@
   {{ if .IsTor }}
       {{ if .NotUpToDate }}
         <p class="security">
-          {{ GetText .Lang "There is a security update available for the Tor Browser Bundle." }}<br />
+          {{ GetText .Lang "There is a security update available for Tor Browser." }}<br />
           {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}
         </p>
       {{ else }}
         {{ if .NotTBB }}
           <p class="security">
-            {{ GetText .Lang "However, it does not appear to be the Tor Browser Bundle." }}<br />
+            {{ GetText .Lang "However, it does not appear to be Tor Browser." }}<br />
             {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}
           </p>
         {{ end }}
