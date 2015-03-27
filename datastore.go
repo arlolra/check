@@ -130,8 +130,12 @@ type Exits struct {
 
 func (e *Exits) Dump(w io.Writer, tminus int, ip string, port int) {
 	ap := AddressPort{ip, port}
+	var last string
 	e.GetAllExits(ap, tminus, func(exit string, _ string, _ int) {
-		w.Write([]byte(exit + "\n"))
+		if exit != last {
+			w.Write([]byte(exit + "\n"))
+			last = exit
+		}
 	})
 }
 
