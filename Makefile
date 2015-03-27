@@ -22,6 +22,7 @@ data/exit-lists/: data/
 
 data/consensus: data/consensuses/
 	@echo "Getting latest consensus documents"
+	@find data/consensuses -mtime +31 | xargs rm -f
 	@pushd data/consensuses/; \
 		wget -r -nH -nd -nc --no-parent --reject "index.html*" \
 			$(collector_url)$(consensuses_dir); \
@@ -30,6 +31,7 @@ data/consensus: data/consensuses/
 
 data/exit-addresses: data/exit-lists/
 	@echo "Getting latest exit lists"
+	@find data/exit-lists -mtime +31 | xargs rm -f
 	@pushd data/exit-lists/; \
 		wget -r -nH -nd -nc --no-parent --reject "index.html*" \
 			$(collector_url)$(exit_lists_dir); \
@@ -38,6 +40,7 @@ data/exit-addresses: data/exit-lists/
 
 descriptors: data/descriptors/
 	@echo "Getting latest descriptors (This may take a while)"
+	@find data/descriptors -mtime +31 | xargs rm -f
 	@pushd data/descriptors/; \
 		wget -r -nH -nd -nc --no-parent --reject "index.html*" \
 			$(collector_url)$(descriptors_dir); \
