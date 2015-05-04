@@ -1,5 +1,12 @@
 {{ template "base.html" . }}
-{{ define "title" }}{{ GetText .Lang "Are you using Tor?" }}{{ end }}
+{{ define "title" }}
+    {{ if .IsTor }}
+      {{ GetText .Lang "Congratulations. This browser is configured to use Tor." }}
+    {{ else }}
+      {{ GetText .Lang "Sorry. You are not using Tor." }}
+    {{ end }}
+{{ end }}
+{{ define "favicon" }}tor-{{ .OnOff }}.png{{ end }}
 {{ define "css" }}
   .on { color: green; }
   .off { color: red; }
