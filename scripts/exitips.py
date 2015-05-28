@@ -49,7 +49,8 @@ def main(consensuses, exit_lists):
 
         # read in consensus and store routes in exits
         for router in parse_file("data/consensuses/" + f,
-                                 "network-status-consensus-3 1.0"):
+                                 "network-status-consensus-3 1.0",
+                                 validate=False):
             if router.fingerprint in exits:
                 continue
             r = Router(router, t)
@@ -72,7 +73,7 @@ def main(consensuses, exit_lists):
 
         # update exit addresses with data from TorDNSEL
         for descriptor in parse_file("data/exit-lists/" + m[0],
-                                     "tordnsel 1.0"):
+                                     "tordnsel 1.0", validate=False):
             e = exits.get(descriptor.fingerprint, None)
             if e is not None:
                 if e.Tminus == t:
@@ -83,7 +84,7 @@ def main(consensuses, exit_lists):
 
     # update all with server descriptor info
     for descriptor in parse_file("data/cached-descriptors",
-                                 "server-descriptor 1.0"):
+                                 "server-descriptor 1.0", validate=False):
         if descriptor.fingerprint in exits:
             r = exits[descriptor.fingerprint]
             r.IsAllowed = descriptor.exit_policy.is_exiting_allowed()
