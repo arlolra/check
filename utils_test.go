@@ -10,6 +10,7 @@ var UserAgents = map[string]bool{
 	"Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0":                                                        true,
 	"Mozilla/5.0 (Windows NT 6.1; rv:17.0) Gecko/20100101 Firefox/17.0":                                                        true,
 	"Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/24.0":                                                        true,
+	"Mozilla/5.0 (Android; Mobile; rv:24.0) Gecko/20100101 Firefox/24.0":                                                       true,
 }
 
 func TestLikelyTBB(t *testing.T) {
