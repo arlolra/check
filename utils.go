@@ -55,7 +55,7 @@ func GetHost(r *http.Request) (host string, err error) {
 	return
 }
 
-var TBBUserAgents = regexp.MustCompile(`^Mozilla/5\.0 \(Windows NT 6\.1; rv:[\d]+\.0\) Gecko/20100101 Firefox/[\d]+\.0$`)
+var TBBUserAgents = regexp.MustCompile(`^Mozilla/5\.0 \(((Windows NT 6\.1)|(Android; Mobile)); rv:[\d]+\.0\) Gecko/20100101 Firefox/[\d]+\.0$`)
 
 func LikelyTBB(ua string) bool {
 	return TBBUserAgents.MatchString(ua)
