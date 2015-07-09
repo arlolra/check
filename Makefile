@@ -78,11 +78,12 @@ data/langs: data/
 i18n: locale/ data/langs
 
 build:
-	go fmt
 	go build
 
 # Add -i for installing latest version, -v for verbose
 test: build
+	! gofmt -l . 2>&1 | read
+	go vet
 	go test -v -run "$(filter)"
 
 cover: build
