@@ -240,7 +240,7 @@ func (e *Exits) Load(source io.Reader, update bool) error {
 				if mask := net.ParseIP(r.Mask); r.IP != nil && mask != nil {
 					m := make(net.IPMask, len(mask))
 					copy(m, mask)
-					r.IPNet = &net.IPNet{r.IP.Mask(m), m}
+					r.IPNet = &net.IPNet{IP: r.IP.Mask(m), Mask: m}
 				}
 			}
 		}
