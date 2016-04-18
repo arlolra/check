@@ -171,12 +171,14 @@ func GetLocaleList(base string) map[string]string {
 		"hr_HR":       "Hrvatski jezik (Croatia)",
 		"hu":          "Magyar",
 		"id":          "Bahasa Indonesia",
+		"is":          "íslenska",
 		"it":          "Italiano",
 		"ja":          "日本語",
 		"km":          "មែរ",
 		"kn":          "ಕನ್ನಡ",
 		"ko":          "한국어",
 		"ko_KR":       "한국어 (South Korea)",
+		"lb":          "Lëtzebuergesch",
 		"lo":          "ລາວ",
 		"lv":          "Latviešu valoda",
 		"mk":          "македонски јазик",
@@ -208,6 +210,7 @@ func GetLocaleList(base string) map[string]string {
 		"tr":          "Türkçe",
 		"uk":          "українська мова",
 		"zh_CN":       "中文简体",
+		"zh_HK":       "中文繁體",
 		"zh_TW":       "中文繁體",
 	}
 
