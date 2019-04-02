@@ -89,13 +89,13 @@
       {{ if .NotUpToDate }}
         <p class="security">
           {{ GetText .Lang "There is a security update available for Tor Browser." }}<br />
-          {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}
+          {{ GetText .Lang "<a href=\"https://www.torproject.org/download/\">Click here to go to the download page</a>" | UnEscaped }}
         </p>
       {{ else }}
         {{ if .NotTBB }}
           <p class="security">
             {{ GetText .Lang "However, it does not appear to be Tor Browser." }}<br />
-            {{ GetText .Lang "<a href=\"https://www.torproject.org/download/download-easy.html\">Click here to go to the download page</a>" | UnEscaped }}
+            {{ GetText .Lang "<a href=\"https://www.torproject.org/download/\">Click here to go to the download page</a>" | UnEscaped }}
           </p>
         {{ end }}
       {{ end }}
@@ -104,14 +104,11 @@
     {{ if .IsTor }}
       {{ GetText .Lang "Please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> for further information about using Tor safely.  You are now free to browse the Internet anonymously." | UnEscaped }} {{ GetText .Lang "For more information about this exit relay, see:" }} <a href="https://metrics.torproject.org/rs.html#search/{{ .IP }}">Relay Search</a>.
     {{ else }}
-      {{ GetText .Lang "If you are attempting to use a Tor client, please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> and specifically the <a href=\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for configuring your Tor client</a>." | UnEscaped }}
+      {{ GetText .Lang "If you are attempting to use a Tor client, please refer to the <a href=\"https://www.torproject.org/\">Tor website</a> and specifically the <a href=\"https://support.torproject.org/#faq\">frequently asked questions</a>." | UnEscaped }}
     {{ end }}
   </p>
-  <a id="donate" href="https://www.torproject.org/donate/donate.html">{{ GetText .Lang "Donate to Support Tor" }}</a>
+  <a id="donate" href="https://donate.torproject.org/">{{ GetText .Lang "Donate to Support Tor" }}</a>
   <ul id="links">
-    <!-- <li>
-      <a href="https://torproject.org/dist/manual/short-user-manual_{{ UserManual .Lang }}.xhtml">{{ GetText .Lang "Short User Manual" }}</a>
-    </li> -->
     <li>
       <a href="https://tor.stackexchange.com/">{{ GetText .Lang "Tor Q&A Site" }}</a>
     </li>
@@ -131,7 +128,7 @@
   <script>
     // javascript enabled?
     var a = document.createElement("a");
-    a.href = "https://www.torproject.org/docs/faq#TBBJavaScriptEnabled";
+    a.href = "https://support.torproject.org/#tbb-34";
     var c = document.createTextNode("{{ GetText .Lang "JavaScript is enabled." }}");
     a.appendChild(c);
     document.getElementById("js").appendChild(a);
