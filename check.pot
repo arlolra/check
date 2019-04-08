@@ -26,8 +26,8 @@ msgid "There is a security update available for Tor Browser."
 msgstr ""
 
 msgid ""
-"<a href=\"https://www.torproject.org/download/download-easy.html\">Click "
-"here to go to the download page</a>"
+"<a href=\"https://www.torproject.org/download/\">Click here to go to the "
+"download page</a>"
 msgstr ""
 
 msgid "Sorry. You are not using Tor."
@@ -36,22 +36,13 @@ msgstr ""
 msgid ""
 "If you are attempting to use a Tor client, please refer to the <a href="
 "\"https://www.torproject.org/\">Tor website</a> and specifically the <a href="
-"\"https://www.torproject.org/docs/faq#DoesntWork\">instructions for "
-"configuring your Tor client</a>."
+"\"https://support.torproject.org/#faq\">frequently asked questions</a>."
 msgstr ""
 
 msgid "Sorry, your query failed or an unexpected response was received."
 msgstr ""
 
-msgid ""
-"A temporary service outage prevents us from determining if your source IP "
-"address is a <a href=\"https://www.torproject.org/\">Tor</a> node."
-msgstr ""
-
 msgid "Your IP address appears to be: "
-msgstr ""
-
-msgid "Are you using Tor?"
 msgstr ""
 
 msgid "This page is also available in the following languages:"
@@ -69,9 +60,6 @@ msgid "Learn More &raquo;"
 msgstr ""
 
 msgid "Go"
-msgstr ""
-
-msgid "Short User Manual"
 msgstr ""
 
 msgid "Donate to Support Tor"
@@ -96,4 +84,7 @@ msgid "Run a Relay"
 msgstr ""
 
 msgid "Stay Anonymous"
+msgstr ""
+
+msgid "Relay Search"
 msgstr ""
