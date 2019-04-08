@@ -62,29 +62,6 @@ func LikelyTBB(ua string) bool {
 	return TBBUserAgents.MatchString(ua) || OrfoxUserAgents.MatchString(ua)
 }
 
-var HaveManual = map[string]bool{
-	"ar":    true,
-	"cs":    true,
-	"de":    true,
-	"el":    true,
-	"en":    true,
-	"es":    true,
-	"fa":    true,
-	"fr":    true,
-	"hu":    true,
-	"it":    true,
-	"ja":    true,
-	"lv":    true,
-	"nb":    true,
-	"nl":    true,
-	"pl":    true,
-	"pt_BR": true,
-	"ru":    true,
-	"sv":    true,
-	"tr":    true,
-	"zh_CN": true,
-}
-
 func FuncMap(domain *gettext.Domain) template.FuncMap {
 	return template.FuncMap{
 		"UnEscaped": func(x string) interface{} {
@@ -104,12 +81,6 @@ func FuncMap(domain *gettext.Domain) template.FuncMap {
 		},
 		"And": func(a bool, b bool) bool {
 			return a && b
-		},
-		"UserManual": func(lang string) string {
-			if _, ok := HaveManual[lang]; !ok {
-				lang = "en"
-			}
-			return lang
 		},
 	}
 }
