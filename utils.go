@@ -56,10 +56,9 @@ func GetHost(r *http.Request) (host string, err error) {
 }
 
 var TBBUserAgents = regexp.MustCompile(`^Mozilla/5\.0 \([^)]*\) Gecko/([\d]+\.0|20100101) Firefox/[\d]+\.0$`)
-var OrfoxUserAgents = regexp.MustCompile(`^Mozilla/5\.0 \(Android; Mobile; rv:38.0\) Gecko/38.0 Firefox/38.0$`)
 
 func LikelyTBB(ua string) bool {
-	return TBBUserAgents.MatchString(ua) || OrfoxUserAgents.MatchString(ua)
+	return TBBUserAgents.MatchString(ua)
 }
 
 func FuncMap(domain *gettext.Domain) template.FuncMap {
